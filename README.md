@@ -7,15 +7,14 @@ AppStudio minor programmeren 2013-2014 course
 Description
 ========
 
-  Upon launch the user is presented with a main menu, giving the options play/resume, levels.
+    Upon launch the user is presented with a main menu, giving the options play/resume, levels.
+    The player has to progress through the puzzles, meaning not all puzzles are available from the start.
 
-  The player has to progress through the puzzles, meaning not all puzzles are available from the start.
+    A puzzle is available if the previous puzzle is solved or skipped.
 
-  A puzzle is available if the previous puzzle is solved or skipped.
-
-  The player is allowed to skip a puzzle after making (minimum for puzzle + 50) moves without solving it.
-
-  When the player opts to skip a puzzle the app will complete the puzzle (as an animation) from the state the player left it in.
+    The player is allowed to skip a puzzle after making (minimum for puzzle + 50) moves without solving it.
+  
+    When the player opts to skip a puzzle the app will complete the puzzle (as an animation) from the state the player left it in.
 
   The player sees the state of the game and can touch and drag the blocks to make a move. Besides the game state the player can also see the moves made thus far.
 
