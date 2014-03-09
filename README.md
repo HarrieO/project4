@@ -43,6 +43,9 @@ Technical
     
     The state of the last seen puzzle will be stored in the Preferences of Android.
     
-    A puzzle state is represented by a string containing the x, y, size and orientation of each car, a puzzle with two cars might look like this: "2,0,3,1;2,0,2,0". The exit of a puzzle is always located at 5,2 following the standard puzzle format.
+    A puzzle state is represented by a string containing the x, y, size and orientation of each car,
+    a puzzle with two cars might look like this: "2,0,3,1;2,0,2,0".
+    
+    The exit of a puzzle is always located at 5,2 following the standard puzzle format.
     
     The app keeps track of all the moves made by the user, however if the  app is closed these moves will not be saved.
