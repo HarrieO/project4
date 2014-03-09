@@ -52,3 +52,13 @@ Technical
     The exit of a puzzle is always located at 5,2 following the standard puzzle format.
     
     The app keeps track of all the moves made by the user, however if the  app is closed these moves will not be saved.
+    
+Database
+========
+
+Puzzles:
+    id : integer, Initial_state : String, Minimum_moves : integer
+    
+Scores:
+    puzzle_id : integer, best_so_far : integer
+
