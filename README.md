@@ -29,6 +29,7 @@ Description
     
     The player can view a list of all unlocked puzzles, for each displaying the length of the best solution so far. From this list a puzzle can be selected to play.
 
+    After solving a puzzle, stars are awarded according to how close to the minimum the found solution was.
 
 Technical
 ========
