@@ -20,6 +20,8 @@ Description
     The player sees the state of the game and can touch and drag the blocks to make a move. Besides the game state the player can also see the moves made thus far.
 
     During gameplay the player has the options to redo a move or revert to the starting state and if allowed to skip the puzzle.
+    
+    If the amount of moves performed is below the maximum an animation will return the puzzle to its original state.
 
     After solving a puzzle the player is shown how many moves were made and if this was an optimal solution.
 
