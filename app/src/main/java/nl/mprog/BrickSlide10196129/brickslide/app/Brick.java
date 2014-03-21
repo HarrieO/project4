@@ -2,6 +2,8 @@ package nl.mprog.BrickSlide10196129.brickslide.app;
 
 import android.util.Log;
 
+import org.andengine.entity.modifier.MoveModifier;
+import org.andengine.entity.modifier.MoveXModifier;
 import org.andengine.entity.sprite.Sprite;
 import org.andengine.input.touch.TouchEvent;
 import org.andengine.opengl.vbo.VertexBufferObjectManager;
@@ -45,6 +47,18 @@ public class Brick extends Sprite {
         if(car.isHorizontal())
             return Values.HORIZONTAL ;
         return Values.VERTICAL ;
+    }
+
+    /**
+     * Moves brick according to move, does not check whether move is a legal move.
+     * No other bricks are blocked during movement, used for magnetic touching.
+     * @param move (Legal) Move to be performed.
+     */
+    public void snapSprite(MainActivity activity, Move move){
+
+       /*MoveModifier entityModifier = new BrickSequenceModifier(activity, this, move);
+
+       registerEntityModifier(entityModifier);*/
     }
 
 }

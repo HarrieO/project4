@@ -19,9 +19,11 @@ public class TouchHandler {
     private boolean moving ;
     private Brick brick;
     private Puzzle puzzle ;
+    private MainActivity activity ;
 
-    TouchHandler(Puzzle puzzle){
+    TouchHandler(MainActivity activity, Puzzle puzzle){
         this.puzzle = puzzle ;
+        this.activity = activity ;
     }
 
     public synchronized boolean startMove(Brick brick, TouchEvent pSceneTouchEvent){
@@ -66,10 +68,17 @@ public class TouchHandler {
                 if (car.isVertical())
                     mov = endY - car.gety();
 
-                if (puzzle.move(new Move(brick.getCarIndex(), mov))) {
-                    brick.setPosition(gridX(endX), gridY(endY));
+                Move move = new Move(brick.getCarIndex(), mov);
+                if (mov != 0 && puzzle.getBoard().legalMove(move)) {
+                    //brick.setPosition(gridX(endX), gridY(endY));
+                    brick.snapSprite(activity, move);
+                    puzzle.move(move);
+                    if(puzzle.winningMovePossible()){
+                        activity.finishPuzzle();
+                    }
                 } else {
-                    brick.setPosition(gridX(car.getx()), gridY(car.gety()));
+                    //brick.setPosition(gridX(car.getx()), gridY(car.gety()));
+                    brick.snapSprite(activity, new Move(brick.getCarIndex(),0));
                 }
                 stopMove(brick);
             } else if(pSceneTouchEvent.getAction() == TouchEvent.ACTION_MOVE){

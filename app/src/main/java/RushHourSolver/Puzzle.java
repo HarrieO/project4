@@ -51,6 +51,12 @@ public class Puzzle {
 		return board.won();
 	}
     public Board getBoard() { return board;       }
+    public boolean winningMovePossible(){
+        return board.legalMove(board.winningMove());
+    }
+    public Move winningMove(){
+        return board.winningMove();
+    }
 	
 	// print function for io interface
 	public void print(){
