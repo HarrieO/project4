@@ -21,11 +21,9 @@ public class TouchHandler {
     private float startX, startY;
     private boolean moving ;
     private Brick brick;
-    private Puzzle puzzle ;
     private MainActivity activity ;
 
-    TouchHandler(MainActivity activity, Puzzle puzzle){
-        this.puzzle = puzzle ;
+    TouchHandler(MainActivity activity){
         this.activity = activity ;
         this.bump = null;
     }
@@ -77,9 +75,9 @@ public class TouchHandler {
                     mov = endY - car.gety();
 
                 Move move = new Move(brick.getCarIndex(), mov);
-                if (mov != 0 && puzzle.move(move)) {
+                if (mov != 0 && activity.getPuzzle().move(move)) {
                     brick.snapSprite(endX, endY);
-                    if(puzzle.winningMovePossible()){
+                    if(activity.getPuzzle().winningMovePossible()){
                         activity.finishPuzzle();
                     }
                 } else {
@@ -103,7 +101,7 @@ public class TouchHandler {
         if(car.isVertical())
             return car.getx();
 
-        int[][] grid = puzzle.getBoard().getBoardArray();
+        int[][] grid = activity.getPuzzle().getBoard().getBoardArray();
         for(int i = car.getx()-1 ; i >= 0 ; i--)
             if(grid[i][car.gety()] != 0)
                 return i+1;
@@ -115,7 +113,7 @@ public class TouchHandler {
         if(car.isVertical())
             return car.getx();
 
-        int[][] grid = puzzle.getBoard().getBoardArray();
+        int[][] grid = activity.getPuzzle().getBoard().getBoardArray();
         for(int i = car.getx() + car.getSize() ; i < 6 ; i++)
             if(grid[i][car.gety()] != 0)
                 return i-car.getSize();
@@ -127,7 +125,7 @@ public class TouchHandler {
         if(car.isHorizontal())
             return car.gety();
 
-        int[][] grid = puzzle.getBoard().getBoardArray();
+        int[][] grid = activity.getPuzzle().getBoard().getBoardArray();
         for(int i = car.gety()-1 ; i >= 0 ; i--)
             if(grid[car.getx()][i] != 0)
                 return i+1;
@@ -139,7 +137,7 @@ public class TouchHandler {
         if(car.isHorizontal())
             return car.gety();
 
-        int[][] grid = puzzle.getBoard().getBoardArray();
+        int[][] grid = activity.getPuzzle().getBoard().getBoardArray();
         for(int i = car.gety() + car.getSize() ; i < 6 ; i++)
             if(grid[car.getx()][i] != 0)
                 return i-car.getSize();

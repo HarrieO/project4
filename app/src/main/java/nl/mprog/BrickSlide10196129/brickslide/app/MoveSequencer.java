@@ -1,7 +1,5 @@
 package nl.mprog.BrickSlide10196129.brickslide.app;
 
-import android.text.method.Touch;
-
 import org.andengine.entity.IEntity;
 import org.andengine.entity.modifier.MoveModifier;
 
@@ -19,13 +17,14 @@ public class MoveSequencer {
     private MainActivity     activity ;
     private ArrayList<Brick> bricks   ;
     private Queue<Move> moves    ;
-    private boolean active ;
+    private boolean active, dropSound;
 
     public MoveSequencer(MainActivity activity, ArrayList<Brick> bricks, Queue<Move> moves){
         this.activity = activity ;
         this.bricks   = bricks   ;
         this.moves    = moves;
         this.active   = false;
+        this.dropSound = true ;
     }
 
     public MoveSequencer(MainActivity activity, ArrayList<Brick> bricks){
@@ -34,6 +33,10 @@ public class MoveSequencer {
 
     public void addMove(Move move){
         moves.offer(move);
+    }
+
+    public void setDropSound(Boolean dropSound){
+        this.dropSound = dropSound;
     }
 
     public synchronized void start(){
@@ -79,7 +82,7 @@ public class MoveSequencer {
         {
             super.onModifierFinished(pItem);
             nextMove();
-            if(TouchHandler.bump != null) {
+            if(dropSound && TouchHandler.bump != null) {
                 TouchHandler.bump.setVolume(50);
                 TouchHandler.bump.play();
             }

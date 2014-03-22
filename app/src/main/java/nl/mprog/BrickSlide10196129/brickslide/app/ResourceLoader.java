@@ -1,6 +1,7 @@
 package nl.mprog.BrickSlide10196129.brickslide.app;
 
 import android.content.res.AssetManager;
+import android.util.Log;
 
 import org.andengine.opengl.texture.ITexture;
 import org.andengine.opengl.texture.TextureManager;
@@ -21,7 +22,8 @@ public class ResourceLoader {
     public static enum Values {
         RED("Red"), BLUE("Blue"), GREEN("Green"), PURPLE("Purple"),
         HORIZONTAL("H"), VERTICAL("V"), BRICK("Brick"), BACKGROUND("BrickslideBackground"),
-        EXTENSION("jpg"), FOLDER("gfx/");
+        EXTENSION("jpg"), FOLDER("gfx/"), BRICKFOLDER("Bricks/"), UNDO("undo"), SKIP("skip"),
+        RESTART("restart"), SLIDE("slide");
 
         private String txt ;
         private Values(String txt){
@@ -52,6 +54,10 @@ public class ResourceLoader {
 
     public void loadAll() throws IOException {
         loadValue(Values.BACKGROUND);
+        loadValue(Values.UNDO);
+        loadValue(Values.RESTART);
+        loadValue(Values.SKIP);
+        loadValue(Values.SLIDE);
         Values colours[] = {Values.RED,Values.BLUE,Values.GREEN,Values.PURPLE};
         Values alignments[] = {Values.HORIZONTAL, Values.VERTICAL};
         for(int length = 1 ; length < 7 ; length++){
@@ -80,7 +86,7 @@ public class ResourceLoader {
     }
 
     private String carPath(Values colour, Values alignment, int length){
-        return Values.FOLDER.txt + colour.txt + Values.BRICK.txt + alignment.txt
+        return Values.FOLDER.txt + Values.BRICKFOLDER.txt + colour.txt + Values.BRICK.txt + alignment.txt
                 + length + "." + Values.EXTENSION.txt ;
     }
 
@@ -93,11 +99,19 @@ public class ResourceLoader {
     }
 
     public TextureRegion loadValue(Values value) throws IOException {
-        return load(Values.FOLDER.txt + value.txt + "." + Values.EXTENSION.txt);
+        return loadValue(value.txt);
     }
 
     public TextureRegion getValue(Values value){
-        return get(Values.FOLDER.txt + value.txt + "." + Values.EXTENSION.txt);
+        return getValue(value.txt);
+    }
+
+    public TextureRegion loadValue(String value) throws IOException {
+        return load(Values.FOLDER.txt + value + "." + Values.EXTENSION.txt);
+    }
+
+    public TextureRegion getValue(String value){
+        return get(Values.FOLDER.txt + value + "." + Values.EXTENSION.txt);
     }
 
     public TextureRegion get(String key) {

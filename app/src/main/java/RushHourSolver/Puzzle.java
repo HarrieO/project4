@@ -57,6 +57,7 @@ public class Puzzle {
     public Move winningMove(){
         return board.winningMove();
     }
+    public int moveCount(){ return moves ; }
 	
 	// print function for io interface
 	public void print(){
@@ -101,10 +102,15 @@ public class Puzzle {
         return false ;
 	}
 	// undoes a move and lowers total moves accordingly
-	public void undo(){
-		move(stack.pop().reverse());
+    // returns the move that undoes the last (the reverse of that last made move)
+	public Move undo(){
+        if(stack.isEmpty())
+            return null ;
+        Move undone = stack.pop().reverse();
+		move(undone);
         stack.pop();
 		moves -= 2;
+        return undone ;
 	}
 	public void setName(String name){
 		this.name = name ;
