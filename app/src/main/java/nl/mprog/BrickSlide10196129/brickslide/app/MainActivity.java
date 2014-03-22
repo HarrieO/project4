@@ -32,6 +32,8 @@ import RushHourSolver.Move;
 import RushHourSolver.MoveStack;
 import RushHourSolver.Puzzle;
 import nl.mprog.BrickSlide10196129.brickslide.app.ResourceLoader.Values;
+import nl.mprog.BrickSlide10196129.brickslide.app.database.PuzzleDatabase;
+import nl.mprog.BrickSlide10196129.brickslide.app.database.PuzzleDatabase.PuzzleCursor;
 
 public class MainActivity extends SimpleBaseGameActivity {
 
@@ -41,29 +43,14 @@ public class MainActivity extends SimpleBaseGameActivity {
     private Sound exit ;
     private Sound bash ;
 
-    private int puzzleIndex = 0 ;
-
-    private String[] puzzles = {"Level 1:8:1,2H2;0,0H2;5,0V3;0,1V3;3,1V3;0,4V2;4,4H2;2,5H3;",
-            "Level 2:8:0,2H2;0,0V2;3,0H3;3,1V2;5,1V3;4,2V2;0,3H3;2,4V2;4,4H2;0,5H2;3,5H2;",
-            "Level 3:14:1,2H2;3,2V3;1,3H2;5,3V3;1,4V2;2,5H2;",
-            "Level 4:9:1,2H2;0,0V3;3,0V3;2,3V2;3,3H3;5,4V2;2,5H3;",
-            "Level 5:9:1,2H2;0,0H2;3,0V3;5,0V2;0,1V3;4,1V3;5,2V2;1,3H3;0,4V2;4,4H2;4,5H2;",
-            "Level 6:9:1,2H2;0,0H2;3,0V2;0,1H2;4,1V3;5,1V3;3,2V3;0,3H2;2,3V2;0,4V2;3,5H3;",
-            "Level 7:13:1,2H2;1,0V2;2,0H2;4,0V2;5,0V2;3,1V2;5,2V2;2,3H2;3,4V2;",
-            "Level 8:12:0,2H2;3,0H2;5,0V3;2,1H2;4,1V2;2,2V2;3,2V2;0,3H2;4,3H2;0,4H2;2,4V2;3,4H3;0,5H2;3,5H3;",
-            "Level 9:12:0,2H2;1,0V2;2,0H2;4,0H2;3,1V2;4,1H2;4,2V3;5,2V2;0,3V3;1,3H3;2,4V2;5,4V2;",
-            "Level 10:14:1,2H2;0,0H2;2,0V2;4,0H2;0,1H2;4,1H2;0,2V3;5,2V3;1,3H3;3,4V2;0,5H2;4,5H2;",
-            "Level 11:25:1,2H2;0,0V3;1,0H2;3,0V3;2,3V2;3,3H3;5,4V2;2,5H3;",
-            "Level 12:17:0,2H2;0,0V2;1,0H2;5,0V3;2,1V3;3,3H3;4,4V2;0,5H3;",
-            "Level 13:16:3,2H2;0,0H2;2,0H2;4,0V2;2,1V2;5,1V3;1,2V2;0,3V3;3,3H2;3,4V2;4,4H2;1,5H2;4,5H2;",
-            "Level 14:17:2,2H2;0,0H2;2,0V2;4,1H2;0,2V2;1,2V2;4,2V2;5,2V2;2,3H2;2,4V2;4,4H2;0,5H2;",
-            "Level 15:23:2,2H2;1,0H2;3,0H2;0,1H2;2,1H2;4,1V3;5,1V3;0,2V3;1,2V3;2,3V2;3,3V2;4,4H2;1,5H2;3,5H2;"};
+    private PuzzleCursor puzzleCursor ;
 
 
     private ArrayList<Brick> carSprites ;
     private TouchHandler handler;
 
     private Puzzle puzzle ;
+    Toast solveMessage ;
 
     private Sprite upSlide ;
     private Sprite downSlide ;
@@ -76,8 +63,10 @@ public class MainActivity extends SimpleBaseGameActivity {
     protected void onCreate(Bundle pSavedInstanceState){
         super.onCreate(pSavedInstanceState);
         carSprites = new ArrayList<Brick>();
-        puzzle = new Puzzle("Level 1:8:1,2H2;0,0H2;5,0V3;0,1V3;3,1V3;0,4V2;4,4H2;2,5H3;");
+        puzzleCursor = new PuzzleDatabase(this).getCursor();
+        puzzle = puzzleCursor.get();
         handler = new TouchHandler(this);
+        solveMessage = Toast.makeText(this,"Calculating solution...", Toast.LENGTH_LONG);
     }
 
     @Override
@@ -299,6 +288,7 @@ public class MainActivity extends SimpleBaseGameActivity {
 
     public void skip(){
         disableBrickTouching();
+
         DelayHandler.delayed(0, new Runnable() {
             @Override
             public void run() {
@@ -309,7 +299,7 @@ public class MainActivity extends SimpleBaseGameActivity {
     }
 
     private void safeSkip(){
-        Toast message = Toast.makeText(this,"Calculating solution.", Toast.LENGTH_LONG);
+        solveMessage.show();
         MoveStack sol = puzzle.solution();
         MoveSequencer seq = new MoveSequencer(this, carSprites);
         if(sol.isEmpty())
@@ -320,7 +310,6 @@ public class MainActivity extends SimpleBaseGameActivity {
             puzzle.move(mov);
         }
         seq.start();
-        message.cancel();
     }
 
     private void startTransition(){
@@ -333,7 +322,7 @@ public class MainActivity extends SimpleBaseGameActivity {
                 DelayHandler.delayed(100, new Runnable() {
                     @Override
                     public void run() {
-                        puzzle = new Puzzle(puzzles[++puzzleIndex % puzzles.length]);
+                        puzzle = puzzleCursor.next();
                         setPuzzle(getEngine().getScene());
                     }
                 });

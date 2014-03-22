@@ -38,6 +38,13 @@ public class Puzzle {
 		this.stack = stack;
 	}
 
+    public Puzzle(String name, int minimum, String state){
+        this.stack = new MoveStack();
+        this.name = name ;
+        this.minimum = minimum ;
+        this.board = new Board(minimum, state);
+    }
+
     public Puzzle(String state){
         this.stack = new MoveStack();
         this.name = state.substring(0, state.indexOf(':'));
