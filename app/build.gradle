@@ -19,6 +19,7 @@ android {
 }
 
 dependencies {
+    compile 'com.readystatesoftware.sqliteasset:sqliteassethelper:+'
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile files('libs/AndEngine.jar')
 }

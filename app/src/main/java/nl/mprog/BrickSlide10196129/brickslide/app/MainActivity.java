@@ -1,6 +1,7 @@
 package nl.mprog.BrickSlide10196129.brickslide.app;
 
 import android.os.Bundle;
+import android.widget.Toast;
 
 import org.andengine.audio.sound.Sound;
 import org.andengine.audio.sound.SoundFactory;
@@ -131,6 +132,7 @@ public class MainActivity extends SimpleBaseGameActivity {
         initBricks(scene);
 
 
+
         upSlide = new Sprite(0, -650, resourceLoader.getValue("slide"), getVertexBufferObjectManager());
 
         downSlide = new Sprite(0, 1290, resourceLoader.getValue("slide"), getVertexBufferObjectManager());
@@ -155,7 +157,6 @@ public class MainActivity extends SimpleBaseGameActivity {
 
         for (Sprite car : carSprites) {
             scene.attachChild(car);
-            scene.registerTouchArea(car);
         }
 
 
@@ -185,7 +186,8 @@ public class MainActivity extends SimpleBaseGameActivity {
     }
 
     public void onGameCreated(){
-
+        super.onGameCreated();
+        enableBrickTouching();
         /*MoveSequencer moves = new MoveSequencer(this,carSprites);
         for(int i = 0 ; i < 2000 ; i++){
             Move move = puzzle.getBoard().possibleMoves().randomPeek();
@@ -194,6 +196,7 @@ public class MainActivity extends SimpleBaseGameActivity {
         }
         moves.start();
         */
+
     }
 
     public Brick createBrick(int index, Car car, Values colour){
@@ -220,6 +223,7 @@ public class MainActivity extends SimpleBaseGameActivity {
     }
 
     public void enableBrickTouching(){
+
         Scene scene = getEngine().getScene();
         for(Brick brick : carSprites){
             scene.registerTouchArea(brick);
@@ -305,6 +309,7 @@ public class MainActivity extends SimpleBaseGameActivity {
     }
 
     private void safeSkip(){
+        Toast message = Toast.makeText(this,"Calculating solution.", Toast.LENGTH_LONG);
         MoveStack sol = puzzle.solution();
         MoveSequencer seq = new MoveSequencer(this, carSprites);
         if(sol.isEmpty())
@@ -315,6 +320,7 @@ public class MainActivity extends SimpleBaseGameActivity {
             puzzle.move(mov);
         }
         seq.start();
+        message.cancel();
     }
 
     private void startTransition(){
