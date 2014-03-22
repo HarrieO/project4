@@ -1,5 +1,6 @@
 package nl.mprog.BrickSlide10196129.brickslide.app;
 
+import org.andengine.audio.sound.Sound;
 import org.andengine.input.touch.TouchEvent;
 
 import RushHourSolver.Car;
@@ -15,6 +16,8 @@ public class TouchHandler {
     public static int FIELD_X = 60 ;
     public static int FIELD_Y = 305 ;
 
+    public static Sound bump ;
+
     private float startX, startY;
     private boolean moving ;
     private Brick brick;
@@ -24,6 +27,7 @@ public class TouchHandler {
     TouchHandler(MainActivity activity, Puzzle puzzle){
         this.puzzle = puzzle ;
         this.activity = activity ;
+        this.bump = null;
     }
 
     public synchronized boolean startMove(Brick brick, TouchEvent pSceneTouchEvent){
@@ -36,6 +40,10 @@ public class TouchHandler {
         startY = pSceneTouchEvent.getY();
 
         return true ;
+    }
+
+    public void setBump(Sound bump){
+        this.bump = bump ;
     }
 
     public boolean hasMove(Brick brick){
@@ -70,13 +78,11 @@ public class TouchHandler {
 
                 Move move = new Move(brick.getCarIndex(), mov);
                 if (mov != 0 && puzzle.move(move)) {
-                    //brick.setPosition(gridX(endX), gridY(endY));
                     brick.snapSprite(endX, endY);
                     if(puzzle.winningMovePossible()){
                         activity.finishPuzzle();
                     }
                 } else {
-                    //brick.setPosition(gridX(car.getx()), gridY(car.gety()));
                     brick.snapSprite();
                 }
                 stopMove(brick);
@@ -148,6 +154,12 @@ public class TouchHandler {
         return FIELD_Y + y*BLOCK_SIDE ;
     }
 
+    public static float nearestXSnap(float x){
+        return Math.round((x - FIELD_X) / BLOCK_SIDE)*BLOCK_SIDE + FIELD_X ;
+    }
 
+    public static float nearestYSnap(float y){
+        return Math.round((y - FIELD_Y) / BLOCK_SIDE)*BLOCK_SIDE + FIELD_Y ;
+    }
 
 }

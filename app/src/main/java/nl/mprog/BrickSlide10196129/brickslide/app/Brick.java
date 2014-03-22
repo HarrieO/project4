@@ -2,6 +2,8 @@ package nl.mprog.BrickSlide10196129.brickslide.app;
 
 import android.util.Log;
 
+import org.andengine.audio.sound.Sound;
+import org.andengine.entity.IEntity;
 import org.andengine.entity.modifier.MoveModifier;
 import org.andengine.entity.modifier.MoveXModifier;
 import org.andengine.entity.sprite.Sprite;
@@ -24,6 +26,8 @@ public class Brick extends Sprite {
     private Car car ;
     private int index ;
     private TouchHandler handler ;
+
+
 
     Brick(int index, Car car, Values colour, Puzzle puzzle, ResourceLoader resourceLoader, TouchHandler handler, VertexBufferObjectManager vertexBufferObjectManager){
         super(handler.gridX(car.getx()), handler.gridY(car.gety()), resourceLoader.getCar(colour, alignment(car), car.getSize()),
@@ -66,6 +70,8 @@ public class Brick extends Sprite {
         float duration = (float)Math.max(0.05,distance/800);
         MoveModifier entityModifier = new MoveModifier(duration,startx,endx,starty,endy);
         registerEntityModifier(entityModifier);
+        if(TouchHandler.bump != null)
+            TouchHandler.bump.play();
     }
 
 }

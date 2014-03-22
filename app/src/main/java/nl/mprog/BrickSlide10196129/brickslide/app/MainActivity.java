@@ -2,6 +2,8 @@ package nl.mprog.BrickSlide10196129.brickslide.app;
 
 import android.os.Bundle;
 
+import org.andengine.audio.sound.Sound;
+import org.andengine.audio.sound.SoundFactory;
 import org.andengine.entity.util.FPSLogger;
 import org.andengine.ui.activity.SimpleBaseGameActivity;
 import org.andengine.engine.options.EngineOptions;
@@ -23,6 +25,7 @@ import org.andengine.entity.sprite.Sprite;
 import RushHourSolver.Board;
 import RushHourSolver.Car;
 import RushHourSolver.Move;
+import RushHourSolver.MoveStack;
 import RushHourSolver.Puzzle;
 import nl.mprog.BrickSlide10196129.brickslide.app.ResourceLoader.Values;
 
@@ -31,7 +34,8 @@ public class MainActivity extends SimpleBaseGameActivity {
     private static int CAMERA_WIDTH = 720;
     private static int CAMERA_HEIGHT = 1280;
 
-    private static int BLOCK_SIDE = 101;
+
+    private Sound exit ;
 
 
     private ArrayList<Brick> carSprites ;
@@ -57,6 +61,21 @@ public class MainActivity extends SimpleBaseGameActivity {
             resourceLoader.loadAll();
         } catch (IOException e) {
             Debug.e(e);
+        }
+        SoundFactory.setAssetBasePath("mfx/");
+
+
+        try {
+           handler.setBump(SoundFactory.createSoundFromAsset(this.mEngine.getSoundManager(), this, "Thip.ogg"));
+           handler.bump.setVolume(50);
+        } catch (final IOException e) {
+            //Debug.e(e);
+        }
+        try {
+           exit = SoundFactory.createSoundFromAsset(this.mEngine.getSoundManager(), this, "Exit.ogg");
+        } catch (final IOException e) {
+           exit = null ;
+            //Debug.e(e);
         }
     }
 
@@ -85,19 +104,21 @@ public class MainActivity extends SimpleBaseGameActivity {
 
         scene.setTouchAreaBindingOnActionDownEnabled(true);
 
-        /*Stack<Move> moves = new Stack<Move>();
-        for(int i = 0 ; i < 20 ; i++){
-            Move move = puzzle.getBoard().possibleMoves().randomPeek();
-            moves.push(move);
-            puzzle.move(move);
-        }
-        for(int i = 0 ; i < 20 ; i++){
-            puzzle.undo();
-        }
-        BrickSequenceModifier.makeModifier(this, carSprites, moves).run();
-        */
         return scene;
     }
+
+    public void onGameCreated(){
+
+        /*MoveSequencer moves = new MoveSequencer(this,carSprites);
+        for(int i = 0 ; i < 2000 ; i++){
+            Move move = puzzle.getBoard().possibleMoves().randomPeek();
+            moves.addMove(move);
+            puzzle.move(move);
+        }
+        moves.start();
+        */
+    }
+
 
     public Brick createBrick(int index, Car car, Values colour){
         return new Brick(index, car,colour, puzzle,resourceLoader,handler,getVertexBufferObjectManager());
@@ -106,8 +127,10 @@ public class MainActivity extends SimpleBaseGameActivity {
     @Override
     public EngineOptions onCreateEngineOptions() {
         final Camera camera = new Camera(0, 0, CAMERA_WIDTH, CAMERA_HEIGHT);
-        return new EngineOptions(true, ScreenOrientation.PORTRAIT_FIXED,
+        EngineOptions options = new EngineOptions(true, ScreenOrientation.PORTRAIT_FIXED,
                 new RatioResolutionPolicy(CAMERA_WIDTH, CAMERA_HEIGHT), camera);
+        options.getAudioOptions().setNeedsSound(true);
+        return options ;
     }
 
     public void disableBrickTouching(){
@@ -145,11 +168,13 @@ public class MainActivity extends SimpleBaseGameActivity {
     public boolean finishPuzzle(){
         if(!puzzle.solved()) {
             Move winningMove = puzzle.winningMove();
-            if (puzzle.getBoard().legalMove(winningMove)) {
-                Brick exitCar = carSprites.get(0);
-                Move epicEndingMove = new Move(0, 7 - exitCar.getCar().getx());
+            if (puzzle.getBoard().move(winningMove)) {
                 disableBrickTouching();
-                exitCar.snapSprite();
+                MoveSequencer moves = new MoveSequencer(this,carSprites);
+                Move epicEndingMove = new Move(winningMove.getCarNumber(), winningMove.getMovement()+3);
+                moves.addMove(epicEndingMove);
+                exit.play();
+                moves.start();
                 return true;
             } else
                 return false;
