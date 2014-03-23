@@ -47,7 +47,7 @@ public class PuzzleDatabase {
 
         public Puzzle get() {
             int id          = cursor.getInt(cursor.getColumnIndex(FeedEntry._ID));
-            String name     = cursor.getString(cursor.getColumnIndex(FeedEntry.COLUMN_NAME_PUZZLE));
+            String name     = cursor.getString(cursor.getColumnIndex(FeedEntry.COLUMN_NAME_NAME));
             int minimum     = cursor.getInt(cursor.getColumnIndex(FeedEntry.COLUMN_NAME_MINIMUM));
             String state   = cursor.getString(cursor.getColumnIndex(FeedEntry.COLUMN_NAME_PUZZLE));
             return new Puzzle(id,name,minimum,state);

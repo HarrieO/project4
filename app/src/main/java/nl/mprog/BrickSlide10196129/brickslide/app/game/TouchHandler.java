@@ -76,6 +76,7 @@ public class TouchHandler {
                 Move move = new Move(brick.getCarIndex(), mov);
                 if (mov != 0 && activity.getPuzzle().move(move)) {
                     brick.snapSprite(endX, endY);
+                    activity.updateMoveCounter();
                     if(activity.getPuzzle().winningMovePossible()){
                         activity.finishPuzzle();
                     }

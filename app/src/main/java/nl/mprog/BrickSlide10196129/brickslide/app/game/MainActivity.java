@@ -2,6 +2,7 @@ package nl.mprog.BrickSlide10196129.brickslide.app.game;
 
 import android.annotation.SuppressLint;
 import android.content.SharedPreferences;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.widget.Toast;
 
@@ -9,7 +10,11 @@ import org.andengine.audio.sound.Sound;
 import org.andengine.audio.sound.SoundFactory;
 import org.andengine.entity.IEntity;
 import org.andengine.entity.modifier.MoveModifier;
+import org.andengine.entity.text.Text;
 import org.andengine.entity.util.FPSLogger;
+import org.andengine.opengl.font.Font;
+import org.andengine.opengl.texture.TextureOptions;
+import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlas;
 import org.andengine.ui.activity.SimpleBaseGameActivity;
 import org.andengine.engine.options.EngineOptions;
 import org.andengine.entity.scene.Scene;
@@ -18,6 +23,8 @@ import org.andengine.engine.camera.Camera;
 import org.andengine.engine.options.ScreenOrientation;
 import org.andengine.engine.options.resolutionpolicy.RatioResolutionPolicy;
 
+import org.andengine.util.HorizontalAlign;
+import org.andengine.util.color.Color;
 import org.andengine.util.debug.Debug;
 
 import java.io.IOException;
@@ -41,22 +48,22 @@ public class MainActivity extends SimpleBaseGameActivity {
     private static int CAMERA_WIDTH = 720;
     private static int CAMERA_HEIGHT = 1280;
 
-    private Sound exit ;
-    private Sound bash ;
+    private Sound exit, bash ;
 
     private PuzzleCursor puzzleCursor ;
-
 
     private ArrayList<Brick> carSprites ;
     private TouchHandler handler;
 
     private Puzzle puzzle ;
-    Toast solveMessage ;
+    private Toast solveMessage ;
 
-    private Sprite upSlide ;
-    private Sprite downSlide ;
+    private Sprite upSlide, downSlide ;
     private ButtonSprite undo, restart, skip ;
 
+    private BitmapTextureAtlas mFontTexture;
+    private Font mFont, counterFont ;
+    private Text puzzleTitle, moveCounter ;
 
     private ResourceLoader resourceLoader ;
 
@@ -87,6 +94,15 @@ public class MainActivity extends SimpleBaseGameActivity {
 
         handler = new TouchHandler(this);
         solveMessage = Toast.makeText(this,"Calculating solution...", Toast.LENGTH_LONG);
+
+        this.mFontTexture = new BitmapTextureAtlas(getTextureManager(),256, 256);
+
+        this.mFont = new Font(getFontManager(),mFontTexture,Typeface.create(Typeface.DEFAULT, Typeface.BOLD),96, true, Color.WHITE);
+
+        this.mEngine.getTextureManager().loadTexture(this.mFontTexture);
+
+        this.getFontManager().loadFont(this.mFont);
+
     }
 
     @Override
@@ -153,14 +169,20 @@ public class MainActivity extends SimpleBaseGameActivity {
 
         initBricks(scene);
 
+        puzzleTitle = new Text(45, 170, this.mFont, puzzle.getName(), getVertexBufferObjectManager());
+        moveCounter = new Text(500,170, this.mFont, String.valueOf(puzzle.moveCount()), 6, getVertexBufferObjectManager());
+        scene.attachChild(puzzleTitle);
+        scene.attachChild(moveCounter);
 
+        String count = String.valueOf(Math.min(puzzle.moveCount(),99999));
+        while(count.length() < 3)
+            count = " " + count ;
+        moveCounter.setText(count);
 
-        upSlide = new Sprite(0, -650, resourceLoader.getValue("slide"), getVertexBufferObjectManager());
-
+        upSlide   = new Sprite(0, -650, resourceLoader.getValue("slide"), getVertexBufferObjectManager());
         downSlide = new Sprite(0, 1290, resourceLoader.getValue("slide"), getVertexBufferObjectManager());
         scene.attachChild(upSlide);
         scene.attachChild(downSlide);
-
 
         scene.setTouchAreaBindingOnActionDownEnabled(true);
 
@@ -202,6 +224,11 @@ public class MainActivity extends SimpleBaseGameActivity {
                 scene.detachChild(downSlide);
                 scene.attachChild(upSlide);
                 scene.attachChild(downSlide);
+
+                String count = String.valueOf(Math.min(puzzle.moveCount(),99999));
+                while(count.length() < 3)
+                    count = " " + count ;
+                moveCounter.setText(count);
             }
         });
 
@@ -253,6 +280,7 @@ public class MainActivity extends SimpleBaseGameActivity {
         scene.registerTouchArea(undo);
         scene.registerTouchArea(restart);
         scene.registerTouchArea(skip);
+
     }
 
 
@@ -264,6 +292,7 @@ public class MainActivity extends SimpleBaseGameActivity {
     public boolean move(Move move){
         if(puzzle.move(move)){
             //carSprites.get(move.getCarNumber()).snapSprite(this, move);
+
             return true ;
         }
         return false ;
@@ -315,9 +344,25 @@ public class MainActivity extends SimpleBaseGameActivity {
             seq.addMove(undone);
             if(steps > 0)
                 undone = puzzle.undo() ;
+            updateMoveCounter();
         }
         seq.start();
     }
+
+    public void updateMoveCounter(){
+        this.runOnUpdateThread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                String count = String.valueOf(Math.min(puzzle.moveCount(),99999));
+                while(count.length() < 3)
+                    count = " " + count ;
+                moveCounter.setText(count);
+            }
+        });
+    }
+
 
     public void skip(){
         disableBrickTouching();
@@ -337,7 +382,7 @@ public class MainActivity extends SimpleBaseGameActivity {
         MoveSequencer seq = new MoveSequencer(this, carSprites);
         if(sol.isEmpty())
             return;
-        while(!puzzle.winningMovePossible()) {
+        while(!puzzle.winningMovePossible() && !sol.isEmpty()) {
             Move mov = sol.pop();
             seq.addMove(mov);
             puzzle.move(mov);
