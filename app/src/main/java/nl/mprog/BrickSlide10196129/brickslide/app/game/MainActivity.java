@@ -225,6 +225,7 @@ public class MainActivity extends SimpleBaseGameActivity {
                 scene.attachChild(upSlide);
                 scene.attachChild(downSlide);
 
+                puzzleTitle.setText(puzzle.getName());
                 String count = String.valueOf(Math.min(puzzle.moveCount(),99999));
                 while(count.length() < 3)
                     count = " " + count ;
