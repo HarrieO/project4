@@ -1,5 +1,6 @@
 package nl.mprog.BrickSlide10196129.brickslide.app.game;
 
+import android.annotation.SuppressLint;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.widget.Toast;
@@ -31,6 +32,7 @@ import RushHourSolver.Move;
 import RushHourSolver.MoveStack;
 import RushHourSolver.Puzzle;
 import nl.mprog.BrickSlide10196129.brickslide.app.R;
+import nl.mprog.BrickSlide10196129.brickslide.app.database.MovesDatabase;
 import nl.mprog.BrickSlide10196129.brickslide.app.database.PuzzleDatabase;
 import nl.mprog.BrickSlide10196129.brickslide.app.database.PuzzleDatabase.PuzzleCursor;
 
@@ -59,6 +61,8 @@ public class MainActivity extends SimpleBaseGameActivity {
     private ResourceLoader resourceLoader ;
 
     @Override
+    // Suppres string format matches because of a bug in android studio (v0.5.1)
+    @SuppressLint("StringFormatMatches")
     protected void onCreate(Bundle pSavedInstanceState){
         super.onCreate(pSavedInstanceState);
         carSprites = new ArrayList<Brick>();
@@ -76,6 +80,9 @@ public class MainActivity extends SimpleBaseGameActivity {
             String state = pref.getString(getString(R.string.state_pref_key), "");
             if(state != "")
                 puzzle.setState(state,moves);
+            MovesDatabase db = new MovesDatabase(this);
+            if(db.movesSaved())
+                puzzle.setMoves(db.get());
         }
 
         handler = new TouchHandler(this);
@@ -90,6 +97,9 @@ public class MainActivity extends SimpleBaseGameActivity {
         pref.putInt(getString(R.string.no_moves_pref_key), puzzle.moveCount());
         pref.putString(getString(R.string.state_pref_key), puzzle.getBoard().getState());
         pref.commit();
+
+        MovesDatabase db = new MovesDatabase(this);
+        db.put(puzzle.movesString());
     }
 
     @Override

@@ -6,7 +6,6 @@ import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 
-import nl.mprog.apps.Hangman10196129.database.HighscoreDatabaseHelper.HighscoreReaderContract.FeedEntry;
 
 /**
  * Highscore Database holds up to 30 highscores.
@@ -30,7 +29,7 @@ public class HighscoreDatabase {
             mDbHelper = new HighscoreDatabaseHelper(context);
         return mDbHelper;
     }
-
+    /*
     public void put(String word, int incorrect, int score) {
         SQLiteDatabase db = load().getWritableDatabase();
 
@@ -132,6 +131,6 @@ public class HighscoreDatabase {
             return !cursor.isLast();
         }
     }
-
+    */
 
 }

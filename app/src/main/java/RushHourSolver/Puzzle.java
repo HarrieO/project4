@@ -71,6 +71,31 @@ public class Puzzle {
 
     public void setState(String state, int moves){
         this.board = new Board(minimum, state);
+        this.moves = moves ;
+    }
+
+    public String movesString(){
+        String moves = "";
+        MoveStack cp = stack.copy();
+        while(!cp.isEmpty()){
+            Move mov = cp.pop();
+            moves = mov.getCarNumber() + "," + mov.getMovement() + ";"  + moves ;
+        }
+        return moves ;
+    }
+
+    public void setMoves(String movesString){
+        int start = 0;
+        int next = movesString.indexOf(',');
+        while(next >= 0){
+            int id = Integer.valueOf(movesString.substring(start, next));
+            start = next + 1 ;
+            next = movesString.indexOf(';',start);
+            int mov = Integer.valueOf(movesString.substring(start, next));
+            start = next + 1 ;
+            next = movesString.indexOf(',',start);
+            stack.push(new Move(id,mov));
+        }
     }
 	
 	// print function for io interface

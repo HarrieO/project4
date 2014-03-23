@@ -6,12 +6,9 @@ import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 
-import nl.mprog.apps.Hangman10196129.database.HighscoreDatabaseHelper.HighscoreReaderContract.FeedEntry;
+import nl.mprog.BrickSlide10196129.brickslide.app.database.MovesDatabaseHelper.MovesReaderContract.FeedEntry ;
+import nl.mprog.BrickSlide10196129.brickslide.app.database.MovesDatabaseHelper.MovesReaderContract;
 
-/**
- * Highscore Database holds up to 30 highscores.
- * Created by hroosterhuis on 17/02/14.
- */
 public class MovesDatabase {
 
     private MovesDatabaseHelper mDbHelper = null;
@@ -31,107 +28,49 @@ public class MovesDatabase {
         return mDbHelper;
     }
 
-    public void put(String word, int incorrect, int score) {
+    public void put(String moves) {
         SQLiteDatabase db = load().getWritableDatabase();
 
+        db.execSQL(MovesReaderContract.SQL_DELETE_ENTRIES);
+        db.execSQL(MovesReaderContract.SQL_CREATE_ENTRIES);
+
         ContentValues values = new ContentValues();
-        values.put(FeedEntry.COLUMN_NAME_WORD, word);
-        values.put(FeedEntry.COLUMN_NAME_INCORRECT, incorrect);
-        values.put(FeedEntry.COLUMN_NAME_SCORE, score);
+        values.put(FeedEntry.COLUMN_NAME_MOVES, moves);
 
-        long newRowId = db.insert(FeedEntry.TABLE_NAME, null, values);
-        if(count() > limit)
-            truncate();
+        db.insert(FeedEntry.TABLE_NAME, null, values);
+
     }
 
-    public void truncate(){
+    public boolean movesSaved() {
         SQLiteDatabase db = load().getReadableDatabase();
 
         String[] projection = {
                 FeedEntry._ID,
-                FeedEntry.COLUMN_NAME_SCORE
+                FeedEntry.COLUMN_NAME_MOVES
         };
 
-        String sortOrder =
-                FeedEntry.COLUMN_NAME_SCORE + " DESC" ;
 
-        Cursor c = db.query(FeedEntry.TABLE_NAME, projection, null, null, null, null, sortOrder);
+        Cursor c = db.query(FeedEntry.TABLE_NAME, projection, null, null, null, null, null);
 
+        return c.getCount() > 0;
+    }
+
+
+    public String get() {
+        SQLiteDatabase db = load().getReadableDatabase();
+
+        String[] projection = {
+                FeedEntry._ID,
+                FeedEntry.COLUMN_NAME_MOVES
+        };
+
+
+        Cursor c = db.query(FeedEntry.TABLE_NAME, projection, null, null, null, null, null);
         c.moveToFirst();
-        c.move(limit-1);
-
-        db = load().getWritableDatabase();
-
-        String[] id = new String[1];
-        for(int i = 0 ; i < c.getCount()-limit ; i++){
-            c.moveToNext();
-            id[0] = String.valueOf(c.getInt(c.getColumnIndex(FeedEntry._ID)));
-            db.delete(FeedEntry.TABLE_NAME, FeedEntry._ID + " LIKE ?", id);
-        }
-
-
-
-
+        return c.getString(c.getColumnIndex(FeedEntry.COLUMN_NAME_MOVES));
     }
 
-    public HighscoreCursor get() {
-        SQLiteDatabase db = load().getReadableDatabase();
 
-        String[] projection = {
-                FeedEntry._ID,
-                FeedEntry.COLUMN_NAME_WORD,
-                FeedEntry.COLUMN_NAME_INCORRECT,
-                FeedEntry.COLUMN_NAME_SCORE
-        };
-
-        String sortOrder =
-                FeedEntry.COLUMN_NAME_SCORE + " DESC";
-
-        Cursor c = db.query(FeedEntry.TABLE_NAME, projection, null, null, null, null, sortOrder);
-        return new HighscoreCursor(c);
-    }
-
-    public long count() {
-        return DatabaseUtils.queryNumEntries(load().getReadableDatabase(),
-                MovesDatabaseHelper.HighscoreReaderContract.FeedEntry.TABLE_NAME);
-    }
-
-    public static class HighscoreCursor {
-        Cursor cursor;
-
-        public HighscoreCursor(Cursor cursor) {
-            this.cursor = cursor;
-            this.cursor.moveToFirst();
-        }
-
-        public String getWord() {
-            return cursor.getString(cursor.getColumnIndex(FeedEntry.COLUMN_NAME_WORD));
-        }
-
-        public int getIncorrect() {
-            return cursor.getInt(cursor.getColumnIndex(FeedEntry.COLUMN_NAME_INCORRECT));
-        }
-
-        public int getScore() {
-            return cursor.getInt(cursor.getColumnIndex(FeedEntry.COLUMN_NAME_SCORE));
-        }
-
-        public void next() {
-            cursor.moveToNext();
-        }
-
-        public void first() {
-            cursor.moveToFirst();
-        }
-
-        public int count() {
-            return cursor.getCount();
-        }
-
-        public boolean hasNext() {
-            return !cursor.isLast();
-        }
-    }
 
 
 }

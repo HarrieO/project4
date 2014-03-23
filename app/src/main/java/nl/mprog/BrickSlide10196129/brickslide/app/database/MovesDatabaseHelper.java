@@ -11,50 +11,43 @@ import android.provider.BaseColumns;
  */
 public class MovesDatabaseHelper extends SQLiteOpenHelper {
 
-    // If you change the database schema, you must increment the database version.
-    public static final int DATABASE_VERSION = 3;
-    public static final String DATABASE_NAME = "FeedReader.db";
+    public static final int DATABASE_VERSION = 1;
+    public static final String DATABASE_NAME = "BrickSlide.db";
 
     public MovesDatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
     public void onCreate(SQLiteDatabase db) {
-        db.execSQL(HighscoreReaderContract.SQL_CREATE_ENTRIES);
+        db.execSQL(MovesReaderContract.SQL_CREATE_ENTRIES);
     }
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        // This database is only a cache for online data, so its upgrade policy is
-        // to simply to discard the data and start over
-        db.execSQL(HighscoreReaderContract.SQL_DELETE_ENTRIES);
+        db.execSQL(MovesReaderContract.SQL_DELETE_ENTRIES);
         onCreate(db);
     }
     public void onDowngrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         onUpgrade(db, oldVersion, newVersion);
     }
 
-    public static final class HighscoreReaderContract {
-        // To prevent someone from accidentally instantiating the contract class,
-        // give it an empty constructor.
-        public HighscoreReaderContract() {}
 
-        /* Inner class that defines the table contents */
+
+    public static final class MovesReaderContract {
+        public MovesReaderContract() {}
+
         public static abstract class FeedEntry implements BaseColumns {
-            public static final String TABLE_NAME = "highscores";
-            public static final String COLUMN_NAME_WORD = "word";
-            public static final String COLUMN_NAME_INCORRECT = "incorrect";
-            public static final String COLUMN_NAME_SCORE = "score";
+            public static final String TABLE_NAME = "moves";
+            public static final String COLUMN_NAME_MOVES = "moves";
         }
 
         public static final String TEXT_TYPE = " TEXT";
-        public static final String INT_TYPE =  " INTEGER";
-        public static final String COMMA_SEP = ",";
         public static final String SQL_CREATE_ENTRIES =
-                "CREATE TABLE " + HighscoreReaderContract.FeedEntry.TABLE_NAME + " (" +
+                "CREATE TABLE " + MovesReaderContract.FeedEntry.TABLE_NAME + " (" +
                         FeedEntry._ID + " INTEGER PRIMARY KEY," +
-                        FeedEntry.COLUMN_NAME_WORD      + TEXT_TYPE + COMMA_SEP +
-                        FeedEntry.COLUMN_NAME_INCORRECT + INT_TYPE  + COMMA_SEP +
-                        FeedEntry.COLUMN_NAME_SCORE     + INT_TYPE  +
+                        FeedEntry.COLUMN_NAME_MOVES      + TEXT_TYPE +
                         " )";
 
-        public static final String SQL_DELETE_ENTRIES = "DROP TABLE IF EXISTS " + HighscoreReaderContract.FeedEntry.TABLE_NAME;
+        public static final String SQL_DELETE_ENTRIES = "DROP TABLE IF EXISTS " + MovesReaderContract.FeedEntry.TABLE_NAME;
+
+        public static final String SQL_TRUNCATE_ENTRIES = "TRUNCATE TABLE " + MovesReaderContract.FeedEntry.TABLE_NAME;
+
     }
 }
