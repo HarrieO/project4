@@ -4,5 +4,8 @@
     <string name="app_name">BrickSlide</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
+    <string name="level_id_pref_key">game_level_id</string>
+    <string name="state_pref_key">game_state</string>
+    <string name="no_moves_pref_key">moves_state</string>
 
 </resources>

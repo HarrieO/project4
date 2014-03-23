@@ -81,6 +81,18 @@ public class Board {
         setState(state);
     }
 
+    public Board( String state){
+        this.height = 6;
+        this.width = 6;
+        this.exitWall = Wall.RIGHT;
+        this.field = new int[width][height];
+        this.exit = 2;
+        this.amountOfCars = 0;
+        this.exitCar = 0;
+        this.heurUpToDate = false ;
+        setState(state);
+    }
+
     private Car readCar(String carState){
         int x,y,length, next, start = 0;
         boolean horizontal = false;
@@ -109,6 +121,18 @@ public class Board {
                 next = state.indexOf(';',start);
             }
         }
+    }
+
+    public String getState(){
+        String state = "";
+        for(int i = 0 ; i < amountOfCars ; i++){
+            Car car = cars[i];
+            if(car.isHorizontal())
+                state += car.getx() + "," + car.gety() + "H" + car.getSize() + ";";
+            else
+                state += car.getx() + "," + car.gety() + "V" + car.getSize() + ";";
+        }
+        return state ;
     }
 	
 	public enum Wall {	 TOP, BOTTOM, LEFT, RIGHT;  	}
@@ -576,6 +600,8 @@ public class Board {
 		}
 		return str ;
 	}
+
+
 	// returns the board in a string format
 	// used as key in hash table
 	public String toString(){

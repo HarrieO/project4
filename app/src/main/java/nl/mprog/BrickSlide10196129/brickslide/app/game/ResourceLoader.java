@@ -1,4 +1,4 @@
-package nl.mprog.BrickSlide10196129.brickslide.app;
+package nl.mprog.BrickSlide10196129.brickslide.app.game;
 
 import android.content.res.AssetManager;
 import android.util.Log;

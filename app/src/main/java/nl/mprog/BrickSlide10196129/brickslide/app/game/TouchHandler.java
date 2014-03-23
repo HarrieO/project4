@@ -1,11 +1,10 @@
-package nl.mprog.BrickSlide10196129.brickslide.app;
+package nl.mprog.BrickSlide10196129.brickslide.app.game;
 
 import org.andengine.audio.sound.Sound;
 import org.andengine.input.touch.TouchEvent;
 
 import RushHourSolver.Car;
 import RushHourSolver.Move;
-import RushHourSolver.Puzzle;
 
 /**
  * Created by hroosterhuis on 3/20/14.

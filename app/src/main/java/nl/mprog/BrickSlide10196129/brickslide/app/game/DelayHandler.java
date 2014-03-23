@@ -1,4 +1,7 @@
-package nl.mprog.BrickSlide10196129.brickslide.app;
+package nl.mprog.BrickSlide10196129.brickslide.app.game;
+
+import android.os.*;
+import android.os.Process;
 
 import RushHourSolver.Puzzle;
 
@@ -21,5 +24,17 @@ public class DelayHandler {
                 runnable.run();
             }
         }).start();
+    }
+
+    public static void priorityThread(final Runnable runnable){
+        Thread t = new Thread(new Runnable() {
+            @Override
+            public void run() {
+
+                runnable.run();
+            }
+        });
+        t.setPriority(Thread.MAX_PRIORITY);
+        t.start();
     }
 }

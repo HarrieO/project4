@@ -1,20 +1,11 @@
-package nl.mprog.BrickSlide10196129.brickslide.app;
+package nl.mprog.BrickSlide10196129.brickslide.app.game;
 
-import android.util.Log;
-
-import org.andengine.audio.sound.Sound;
-import org.andengine.entity.IEntity;
 import org.andengine.entity.modifier.MoveModifier;
-import org.andengine.entity.modifier.MoveXModifier;
 import org.andengine.entity.sprite.Sprite;
 import org.andengine.input.touch.TouchEvent;
 import org.andengine.opengl.vbo.VertexBufferObjectManager;
 
-import java.util.logging.Handler;
-
-import RushHourSolver.Move;
 import RushHourSolver.Puzzle;
-import nl.mprog.BrickSlide10196129.brickslide.app.ResourceLoader.Values;
 
 import RushHourSolver.Car;
 
@@ -29,7 +20,7 @@ public class Brick extends Sprite {
 
 
 
-    Brick(int index, Car car, Values colour, Puzzle puzzle, ResourceLoader resourceLoader, TouchHandler handler, VertexBufferObjectManager vertexBufferObjectManager){
+    Brick(int index, Car car, ResourceLoader.Values colour, Puzzle puzzle, ResourceLoader resourceLoader, TouchHandler handler, VertexBufferObjectManager vertexBufferObjectManager){
         super(handler.gridX(car.getx()), handler.gridY(car.gety()), resourceLoader.getCar(colour, alignment(car), car.getSize()),
                 vertexBufferObjectManager);
         this.car    = car ;
@@ -49,10 +40,10 @@ public class Brick extends Sprite {
         return handler.onTouched(this,pSceneTouchEvent);
     }
 
-    public static Values alignment(Car car){
+    public static ResourceLoader.Values alignment(Car car){
         if(car.isHorizontal())
-            return Values.HORIZONTAL ;
-        return Values.VERTICAL ;
+            return ResourceLoader.Values.HORIZONTAL ;
+        return ResourceLoader.Values.VERTICAL ;
     }
 
     public void snapSprite(){

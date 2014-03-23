@@ -16,7 +16,7 @@ import android.util.Log;
 public class Puzzle {
 	private Board board;
 	private String name;
-    private int minimum ;
+    private int minimum, id ;
 	
 	// keeps track of the total moves made since start
 	private int moves ;
@@ -38,20 +38,22 @@ public class Puzzle {
 		this.stack = stack;
 	}
 
-    public Puzzle(String name, int minimum, String state){
+    public Puzzle(int id, String name, int minimum, String state){
         this.stack = new MoveStack();
         this.name = name ;
         this.minimum = minimum ;
         this.board = new Board(minimum, state);
+        this.id = id ;
     }
 
-    public Puzzle(String state){
+    public Puzzle(String state, int moves){
         this.stack = new MoveStack();
         this.name = state.substring(0, state.indexOf(':'));
         state = state.substring(state.indexOf(':')+1);
         this.minimum = Integer.valueOf(state.substring(0, state.indexOf(':')));
         state = state.substring(state.indexOf(':')+1);
-        this.board = new Board(minimum, state);
+        this.board = new Board(state);
+        this.moves = moves ;
     }
 	// returns true if the board is in winning state
 	public boolean solved() {
@@ -65,6 +67,11 @@ public class Puzzle {
         return board.winningMove();
     }
     public int moveCount(){ return moves ; }
+    public int getId(){ return  id ; }
+
+    public void setState(String state, int moves){
+        this.board = new Board(minimum, state);
+    }
 	
 	// print function for io interface
 	public void print(){

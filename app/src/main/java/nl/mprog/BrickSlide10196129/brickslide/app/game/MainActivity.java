@@ -1,5 +1,6 @@
-package nl.mprog.BrickSlide10196129.brickslide.app;
+package nl.mprog.BrickSlide10196129.brickslide.app.game;
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.widget.Toast;
 
@@ -7,7 +8,6 @@ import org.andengine.audio.sound.Sound;
 import org.andengine.audio.sound.SoundFactory;
 import org.andengine.entity.IEntity;
 import org.andengine.entity.modifier.MoveModifier;
-import org.andengine.entity.sprite.batch.SpriteGroup;
 import org.andengine.entity.util.FPSLogger;
 import org.andengine.ui.activity.SimpleBaseGameActivity;
 import org.andengine.engine.options.EngineOptions;
@@ -21,7 +21,6 @@ import org.andengine.util.debug.Debug;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Stack;
 
 import org.andengine.entity.sprite.Sprite;
 
@@ -31,7 +30,7 @@ import RushHourSolver.Car;
 import RushHourSolver.Move;
 import RushHourSolver.MoveStack;
 import RushHourSolver.Puzzle;
-import nl.mprog.BrickSlide10196129.brickslide.app.ResourceLoader.Values;
+import nl.mprog.BrickSlide10196129.brickslide.app.R;
 import nl.mprog.BrickSlide10196129.brickslide.app.database.PuzzleDatabase;
 import nl.mprog.BrickSlide10196129.brickslide.app.database.PuzzleDatabase.PuzzleCursor;
 
@@ -64,9 +63,33 @@ public class MainActivity extends SimpleBaseGameActivity {
         super.onCreate(pSavedInstanceState);
         carSprites = new ArrayList<Brick>();
         puzzleCursor = new PuzzleDatabase(this).getCursor();
-        puzzle = puzzleCursor.get();
+
+        SharedPreferences pref = getPreferences(MODE_PRIVATE);
+        int id = pref.getInt(getString(R.string.level_id_pref_key),-1);
+        int moves = pref.getInt(getString(R.string.no_moves_pref_key),0);
+        if(id == -1)
+            puzzle = puzzleCursor.get();
+        else if(moves == 0)
+            puzzle = puzzleCursor.get(id);
+        else {
+            puzzle = puzzleCursor.get(id);
+            String state = pref.getString(getString(R.string.state_pref_key), "");
+            if(state != "")
+                puzzle.setState(state,moves);
+        }
+
         handler = new TouchHandler(this);
         solveMessage = Toast.makeText(this,"Calculating solution...", Toast.LENGTH_LONG);
+    }
+
+    @Override
+    protected void onPause(){
+        super.onPause();
+        SharedPreferences.Editor pref = getPreferences(MODE_PRIVATE).edit();
+        pref.putInt(getString(R.string.level_id_pref_key), puzzle.getId());
+        pref.putInt(getString(R.string.no_moves_pref_key), puzzle.moveCount());
+        pref.putString(getString(R.string.state_pref_key), puzzle.getBoard().getState());
+        pref.commit();
     }
 
     @Override
@@ -105,7 +128,7 @@ public class MainActivity extends SimpleBaseGameActivity {
         carSprites = new ArrayList<Brick>();
 
         final Scene scene = new Scene();
-        Sprite backgroundSprite = new Sprite(0, 0, resourceLoader.getValue(Values.BACKGROUND), getVertexBufferObjectManager());
+        Sprite backgroundSprite = new Sprite(0, 0, resourceLoader.getValue(ResourceLoader.Values.BACKGROUND), getVertexBufferObjectManager());
         scene.attachChild(backgroundSprite);
 
         undo = ButtonSprite.undoSprite(this, resourceLoader, getVertexBufferObjectManager());
@@ -137,9 +160,9 @@ public class MainActivity extends SimpleBaseGameActivity {
     public void initBricks(final Scene scene) {
         Board board = puzzle.getBoard();
 
-        Values colours[] = {Values.BLUE, Values.GREEN, Values.PURPLE};
+        ResourceLoader.Values colours[] = {ResourceLoader.Values.BLUE, ResourceLoader.Values.GREEN, ResourceLoader.Values.PURPLE};
 
-        carSprites.add(createBrick(0, board.getCar(0), Values.RED));
+        carSprites.add(createBrick(0, board.getCar(0), ResourceLoader.Values.RED));
         for (int i = 1; i < board.getTotalCars(); i++) {
             carSprites.add(createBrick(i, board.getCar(i), colours[i % colours.length]));
         }
@@ -188,7 +211,7 @@ public class MainActivity extends SimpleBaseGameActivity {
 
     }
 
-    public Brick createBrick(int index, Car car, Values colour){
+    public Brick createBrick(int index, Car car, ResourceLoader.Values colour){
         return new Brick(index, car,colour, puzzle,resourceLoader,handler,getVertexBufferObjectManager());
     }
 
@@ -289,7 +312,7 @@ public class MainActivity extends SimpleBaseGameActivity {
     public void skip(){
         disableBrickTouching();
 
-        DelayHandler.delayed(0, new Runnable() {
+        DelayHandler.priorityThread(new Runnable() {
             @Override
             public void run() {
                 safeSkip();
