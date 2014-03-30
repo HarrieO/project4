@@ -48,7 +48,10 @@ public abstract class PuzzleSolver {
 					queue.push(node);
 				}
 			}
+            if(Thread.interrupted())
+                return new MoveStack(1);
 		}
+
 		if( hashInfo ){
 			 System.out.printf("Considered: %d Relevant: %d Abandoned: %d Closed: %d. ",
 					 nodesConsidered,table.size(),(nodesConsidered - table.size()),queue.size());

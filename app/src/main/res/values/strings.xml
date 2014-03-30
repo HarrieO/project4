@@ -8,5 +8,6 @@
     <string name="state_pref_key">game_state</string>
     <string name="no_moves_pref_key">moves_state</string>
     <string name="puzzle_started_pref_key">start_time</string>
+    <string name="title_activity_menu">BrickSlide</string>
 
 </resources>

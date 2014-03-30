@@ -12,8 +12,8 @@ import android.provider.BaseColumns;
 public class HighscoreDatabaseHelper extends SQLiteOpenHelper {
 
     // If you change the database schema, you must increment the database version.
-    public static final int DATABASE_VERSION = 3;
-    public static final String DATABASE_NAME = "FeedReader.db";
+    public static final int DATABASE_VERSION = 4;
+    public static final String DATABASE_NAME = "BrickSlide.db";
 
     public HighscoreDatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -39,20 +39,17 @@ public class HighscoreDatabaseHelper extends SQLiteOpenHelper {
         /* Inner class that defines the table contents */
         public static abstract class FeedEntry implements BaseColumns {
             public static final String TABLE_NAME = "highscores";
-            public static final String COLUMN_NAME_WORD = "word";
-            public static final String COLUMN_NAME_INCORRECT = "incorrect";
-            public static final String COLUMN_NAME_SCORE = "score";
+            public static final String COLUMN_NAME_PUZZLE_ID = "puzzle_id";
+            public static final String COLUMN_NAME_MOVES = "moves";
         }
 
-        public static final String TEXT_TYPE = " TEXT";
         public static final String INT_TYPE =  " INTEGER";
         public static final String COMMA_SEP = ",";
         public static final String SQL_CREATE_ENTRIES =
                 "CREATE TABLE " + HighscoreReaderContract.FeedEntry.TABLE_NAME + " (" +
                         FeedEntry._ID + " INTEGER PRIMARY KEY," +
-                        FeedEntry.COLUMN_NAME_WORD      + TEXT_TYPE + COMMA_SEP +
-                        FeedEntry.COLUMN_NAME_INCORRECT + INT_TYPE  + COMMA_SEP +
-                        FeedEntry.COLUMN_NAME_SCORE     + INT_TYPE  +
+                        FeedEntry.COLUMN_NAME_PUZZLE_ID + INT_TYPE + COMMA_SEP +
+                        FeedEntry.COLUMN_NAME_MOVES     + INT_TYPE  +
                         " )";
 
         public static final String SQL_DELETE_ENTRIES = "DROP TABLE IF EXISTS " + HighscoreReaderContract.FeedEntry.TABLE_NAME;

@@ -21,9 +21,9 @@ public class ResourceLoader {
 
     public static enum Values {
         RED("Red"), BLUE("Blue"), GREEN("Green"), PURPLE("Purple"),
-        HORIZONTAL("H"), VERTICAL("V"), BRICK("Brick"), BACKGROUND("BrickslideBackground"),
-        EXTENSION("jpg"), FOLDER("gfx/"), BRICKFOLDER("Bricks/"), UNDO("undo"), SKIP("skip"),
-        RESTART("restart"), SLIDE("slide");
+        HORIZONTAL("H"), VERTICAL("V"), BRICK("Brick"), BACKGROUND("BrickslideBackground.jpg"),
+        EXTENSION("jpg"), FOLDER("gfx/"), BRICKFOLDER("Bricks/"), UNDO("undo.jpg"), SKIP("skip.jpg"),
+        RESTART("restart.jpg"), SLIDE("slide.jpg"), STAR("star.gif"), NOSTAR("nostar.gif");
 
         private String txt ;
         private Values(String txt){
@@ -58,6 +58,8 @@ public class ResourceLoader {
         loadValue(Values.RESTART);
         loadValue(Values.SKIP);
         loadValue(Values.SLIDE);
+        loadValue(Values.STAR);
+        loadValue(Values.NOSTAR);
         Values colours[] = {Values.RED,Values.BLUE,Values.GREEN,Values.PURPLE};
         Values alignments[] = {Values.HORIZONTAL, Values.VERTICAL};
         for(int length = 1 ; length < 7 ; length++){
@@ -107,11 +109,11 @@ public class ResourceLoader {
     }
 
     public TextureRegion loadValue(String value) throws IOException {
-        return load(Values.FOLDER.txt + value + "." + Values.EXTENSION.txt);
+        return load(Values.FOLDER.txt + value );
     }
 
     public TextureRegion getValue(String value){
-        return get(Values.FOLDER.txt + value + "." + Values.EXTENSION.txt);
+        return get(Values.FOLDER.txt + value );
     }
 
     public TextureRegion get(String key) {

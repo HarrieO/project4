@@ -4,12 +4,15 @@ import android.annotation.SuppressLint;
 import android.content.SharedPreferences;
 import android.graphics.Typeface;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Toast;
 
 import org.andengine.audio.sound.Sound;
 import org.andengine.audio.sound.SoundFactory;
 import org.andengine.entity.IEntity;
 import org.andengine.entity.modifier.MoveModifier;
+import org.andengine.entity.modifier.RotationModifier;
+import org.andengine.entity.modifier.ScaleModifier;
 import org.andengine.entity.text.Text;
 import org.andengine.entity.util.FPSLogger;
 import org.andengine.opengl.font.Font;
@@ -39,21 +42,26 @@ import RushHourSolver.Move;
 import RushHourSolver.MoveStack;
 import RushHourSolver.Puzzle;
 import nl.mprog.BrickSlide10196129.brickslide.app.R;
+import nl.mprog.BrickSlide10196129.brickslide.app.database.HighscoreDatabase;
 import nl.mprog.BrickSlide10196129.brickslide.app.database.MovesDatabase;
 import nl.mprog.BrickSlide10196129.brickslide.app.database.PuzzleDatabase;
 import nl.mprog.BrickSlide10196129.brickslide.app.database.PuzzleDatabase.PuzzleCursor;
+
+import nl.mprog.BrickSlide10196129.brickslide.app.game.ResourceLoader.Values;
+
 
 public class MainActivity extends SimpleBaseGameActivity {
 
     private static int CAMERA_WIDTH = 720;
     private static int CAMERA_HEIGHT = 1280;
 
-    private Sound exit, bash ;
-
+    private HighscoreDatabase highscoredb ;
     private PuzzleCursor puzzleCursor ;
+    private Thread solveThread ;
 
     private ArrayList<Brick> carSprites ;
     private TouchHandler handler;
+    private SoundHandler soundHandler ;
 
     private Puzzle puzzle ;
     private Toast solveMessage ;
@@ -62,18 +70,25 @@ public class MainActivity extends SimpleBaseGameActivity {
     private ButtonSprite undo, restart, skip ;
 
     private BitmapTextureAtlas mFontTexture;
-    private Font mFont, counterFont ;
+    private Font mFont ;
     private Text puzzleTitle, moveCounter ;
 
+    private boolean skipped ;
+
     private ResourceLoader resourceLoader ;
+
+    private Sprite[] stars, nostars;
 
     @Override
     // Suppres string format matches because of a bug in android studio (v0.5.1)
     @SuppressLint("StringFormatMatches")
     protected void onCreate(Bundle pSavedInstanceState){
         super.onCreate(pSavedInstanceState);
-        carSprites = new ArrayList<Brick>();
+        carSprites   = new ArrayList<Brick>();
         puzzleCursor = new PuzzleDatabase(this).getCursor();
+        highscoredb  = new HighscoreDatabase(this);
+
+        skipped = false ;
 
         SharedPreferences pref = getPreferences(MODE_PRIVATE);
         int id = pref.getInt(getString(R.string.level_id_pref_key),-1);
@@ -92,16 +107,10 @@ public class MainActivity extends SimpleBaseGameActivity {
                 puzzle.setMoves(db.get());
         }
 
-        handler = new TouchHandler(this);
+        stars   = new Sprite[5];
+        nostars = new Sprite[5];
+
         solveMessage = Toast.makeText(this,"Calculating solution...", Toast.LENGTH_LONG);
-
-        this.mFontTexture = new BitmapTextureAtlas(getTextureManager(),256, 256);
-
-        this.mFont = new Font(getFontManager(),mFontTexture,Typeface.create(Typeface.DEFAULT, Typeface.BOLD),96, true, Color.WHITE);
-
-        this.mEngine.getTextureManager().loadTexture(this.mFontTexture);
-
-        this.getFontManager().loadFont(this.mFont);
 
     }
 
@@ -116,6 +125,10 @@ public class MainActivity extends SimpleBaseGameActivity {
 
         MovesDatabase db = new MovesDatabase(this);
         db.put(puzzle.movesString());
+
+        if(solveThread != null)
+            solveThread.interrupt();
+
     }
 
     @Override
@@ -127,34 +140,30 @@ public class MainActivity extends SimpleBaseGameActivity {
             Debug.e(e);
         }
 
-        SoundFactory.setAssetBasePath("mfx/");
-        try {
-           handler.setBump(SoundFactory.createSoundFromAsset(this.mEngine.getSoundManager(), this, "Thip.ogg"));
-           handler.bump.setVolume(50);
-        } catch (final IOException e) {
-            //Debug.e(e);
-        }
-        try {
-           exit = SoundFactory.createSoundFromAsset(this.mEngine.getSoundManager(), this, "Exit.ogg");
-        } catch (final IOException e) {
-           exit = null ;
-            //Debug.e(e);
-        }
-        try {
-            bash = SoundFactory.createSoundFromAsset(this.mEngine.getSoundManager(), this, "shortbang.ogg");
-        } catch (final IOException e) {
-            bash = null ;
-            //Debug.e(e);
-        }
+        handler = new TouchHandler(this);
+
+        soundHandler = new SoundHandler(this);
+
+
+
+        this.mFontTexture = new BitmapTextureAtlas(getTextureManager(),256, 256);
+
+        this.mFont = new Font(getFontManager(),mFontTexture,Typeface.create(Typeface.DEFAULT, Typeface.BOLD),96, true, Color.WHITE);
+
+        this.mEngine.getTextureManager().loadTexture(this.mFontTexture);
+
+        this.getFontManager().loadFont(this.mFont);
+
     }
 
     @Override
     protected Scene onCreateScene() {
+
         this.mEngine.registerUpdateHandler(new FPSLogger());
         carSprites = new ArrayList<Brick>();
 
         final Scene scene = new Scene();
-        Sprite backgroundSprite = new Sprite(0, 0, resourceLoader.getValue(ResourceLoader.Values.BACKGROUND), getVertexBufferObjectManager());
+        Sprite backgroundSprite = new Sprite(0, 0, resourceLoader.getValue(Values.BACKGROUND), getVertexBufferObjectManager());
         scene.attachChild(backgroundSprite);
 
         undo = ButtonSprite.undoSprite(this, resourceLoader, getVertexBufferObjectManager());
@@ -174,13 +183,34 @@ public class MainActivity extends SimpleBaseGameActivity {
         scene.attachChild(puzzleTitle);
         scene.attachChild(moveCounter);
 
-        String count = String.valueOf(Math.min(puzzle.moveCount(),99999));
-        while(count.length() < 3)
-            count = " " + count ;
-        moveCounter.setText(count);
+        moveCounter.setText(String.valueOf(Math.min(puzzle.moveCount(),999)));
+        moveCounter.setX(680-moveCounter.getWidth());
 
-        upSlide   = new Sprite(0, -650, resourceLoader.getValue("slide"), getVertexBufferObjectManager());
-        downSlide = new Sprite(0, 1290, resourceLoader.getValue("slide"), getVertexBufferObjectManager());
+        for(int i = 0; i < 5; i++){
+            nostars[i] = new Sprite(0, 0, resourceLoader.getValue(Values.NOSTAR), getVertexBufferObjectManager());
+            nostars[i].setScaleCenter(0, 0);
+            nostars[i].setScale(0.065f);
+            nostars[i].setPosition((CAMERA_WIDTH - nostars[i].getWidthScaled()*5)/2 + nostars[i].getWidthScaled()*i,
+                    1170 - nostars[i].getHeightScaled()/2);
+            scene.attachChild(nostars[i]);
+        }
+
+        int highscore = 0 ;
+        if(highscoredb.hasScore(puzzle.getId())) {
+            highscore = puzzle.getStars(highscoredb.get(puzzle.getId()));
+        }
+
+        for(int i = 0; i < 5; i++){
+            stars[i] = new Sprite(0, 0, resourceLoader.getValue(Values.STAR), getVertexBufferObjectManager());
+            stars[i].setScaleCenter(0, 0);
+            stars[i].setScale(0.065f);
+            stars[i].setPosition((CAMERA_WIDTH - stars[i].getWidthScaled()*5)/2 + stars[i].getWidthScaled()*i, 1170 - stars[i].getHeightScaled()/2);
+            if(i < highscore)
+                scene.attachChild(stars[i]);
+        }
+
+        upSlide   = new Sprite(0, -650, resourceLoader.getValue(Values.SLIDE), getVertexBufferObjectManager());
+        downSlide = new Sprite(0, 1290, resourceLoader.getValue(Values.SLIDE), getVertexBufferObjectManager());
         scene.attachChild(upSlide);
         scene.attachChild(downSlide);
 
@@ -226,10 +256,27 @@ public class MainActivity extends SimpleBaseGameActivity {
                 scene.attachChild(downSlide);
 
                 puzzleTitle.setText(puzzle.getName());
-                String count = String.valueOf(Math.min(puzzle.moveCount(),99999));
-                while(count.length() < 3)
-                    count = " " + count ;
-                moveCounter.setText(count);
+
+                updateMoveCounter();
+
+                for(int i = 0; i < 5; i++){
+                    nostars[i].clearEntityModifiers();
+                    nostars[i].setPosition((CAMERA_WIDTH - nostars[i].getWidthScaled()*5)/2 + nostars[i].getWidthScaled()*i,
+                            1170 - nostars[i].getHeightScaled()/2);
+
+                }
+
+                int highscore = 0 ;
+                if(highscoredb.hasScore(puzzle.getId()))
+                    highscore = puzzle.getStars(highscoredb.get(puzzle.getId()));
+                for(int i = 0 ; i < 5 ; i++){
+                    stars[i].clearEntityModifiers();
+                    stars[i].detachSelf();
+                    stars[i].setPosition((CAMERA_WIDTH - stars[i].getWidthScaled()*5)/2 + stars[i].getWidthScaled()*i,
+                            1170 - nostars[i].getHeightScaled()/2);
+                    if(i < highscore)
+                        scene.attachChild(stars[i]);
+                }
             }
         });
 
@@ -238,19 +285,16 @@ public class MainActivity extends SimpleBaseGameActivity {
     public void onGameCreated(){
         super.onGameCreated();
         enableBrickTouching();
-        /*MoveSequencer moves = new MoveSequencer(this,carSprites);
-        for(int i = 0 ; i < 2000 ; i++){
-            Move move = puzzle.getBoard().possibleMoves().randomPeek();
-            moves.addMove(move);
-            puzzle.move(move);
-        }
-        moves.start();
-        */
+        updateMoveCounter();
 
     }
 
     public Brick createBrick(int index, Car car, ResourceLoader.Values colour){
         return new Brick(index, car,colour, puzzle,resourceLoader,handler,getVertexBufferObjectManager());
+    }
+
+    public SoundHandler getSoundHandler(){
+        return soundHandler ;
     }
 
     @Override
@@ -292,8 +336,6 @@ public class MainActivity extends SimpleBaseGameActivity {
      */
     public boolean move(Move move){
         if(puzzle.move(move)){
-            //carSprites.get(move.getCarNumber()).snapSprite(this, move);
-
             return true ;
         }
         return false ;
@@ -306,14 +348,18 @@ public class MainActivity extends SimpleBaseGameActivity {
     public boolean finishPuzzle(){
         if(!puzzle.solved()) {
             Move winningMove = puzzle.winningMove();
-            if (puzzle.getBoard().move(winningMove)) {
+            if (puzzle.move(winningMove)) {
                 disableBrickTouching();
                 MoveSequencer moves = new MoveSequencer(this,carSprites);
                 Move epicEndingMove = new Move(winningMove.getCarNumber(), winningMove.getMovement()+3);
                 moves.addMove(epicEndingMove);
-                exit.play();
+                soundHandler.exit.play();
                 moves.setDropSound(false);
                 moves.start();
+                if(!skipped)
+                    highscoredb.put(puzzle.getId(), puzzle.moveCount());
+                else
+                    highscoredb.put(puzzle.getId(), -1);
 
                 return true;
             } else
@@ -356,10 +402,8 @@ public class MainActivity extends SimpleBaseGameActivity {
             @Override
             public void run()
             {
-                String count = String.valueOf(Math.min(puzzle.moveCount(),99999));
-                while(count.length() < 3)
-                    count = " " + count ;
-                moveCounter.setText(count);
+                moveCounter.setText(String.valueOf(Math.min(puzzle.moveCount(),999)));
+                moveCounter.setX(680-moveCounter.getWidth());
             }
         });
     }
@@ -368,31 +412,77 @@ public class MainActivity extends SimpleBaseGameActivity {
     public void skip(){
         disableBrickTouching();
 
-        DelayHandler.priorityThread(new Runnable() {
+        Thread t = new Thread(new Runnable() {
             @Override
             public void run() {
+
                 safeSkip();
             }
         });
+        t.setPriority(Thread.MAX_PRIORITY);
+        solveThread = t ;
+        t.start();
 
     }
 
     private void safeSkip(){
         solveMessage.show();
         MoveStack sol = puzzle.solution();
-        MoveSequencer seq = new MoveSequencer(this, carSprites);
-        if(sol.isEmpty())
-            return;
-        while(!puzzle.winningMovePossible() && !sol.isEmpty()) {
-            Move mov = sol.pop();
-            seq.addMove(mov);
-            puzzle.move(mov);
+        if(!Thread.interrupted()) {
+            MoveSequencer seq = new MoveSequencer(this, carSprites);
+            if (sol.isEmpty())
+                return;
+            while (!puzzle.winningMovePossible() && !sol.isEmpty()) {
+                Move mov = sol.pop();
+                seq.addMove(mov);
+                puzzle.move(mov);
+            }
+            skipped = true ;
+            seq.start();
         }
-        seq.start();
+        solveThread = null ;
     }
 
     private void startTransition(){
+        for(int i = 0 ; i < 5 ; i++)
+            stars[i].detachSelf();
+        for(int i = 0 ; i < 5 ; i++){
+            final int index = i ;
+            if(index < puzzle.getStars(skipped)) {
+                DelayHandler.delayed(250 * i, new Runnable() {
+                    @Override
+                    public void run() {
+                        getEngine().getScene().attachChild(stars[index]);
+                        soundHandler.starwon.setVolume(10);
+                        soundHandler.starwon.play();
+                    }
+                });
+            } else if(index >= puzzle.getStars(false) || skipped){
+                DelayHandler.delayed(250 * i, new Runnable() {
+                    @Override
+                    public void run() {
+                        soundHandler.starlost.setVolume(10);
+                        soundHandler.starlost.play();
+                    }
+                });
+            }
+
+        }
+        skipped = false ;
+        DelayHandler.delayed(1500,new Runnable() {
+            @Override
+            public void run() {
+                slideTransition();
+            }
+        } );
+    }
+
+    private void slideTransition(){
         disableBrickTouching();
+        upSlide.detachSelf();
+        downSlide.detachSelf();
+        getEngine().getScene().attachChild(upSlide);
+        getEngine().getScene().attachChild(downSlide);
         upSlide.registerEntityModifier(new MoveModifier(0.3f,0,0,-650,0) {
             @Override
             protected void onModifierFinished(final IEntity pItem)
@@ -436,7 +526,7 @@ public class MainActivity extends SimpleBaseGameActivity {
         DelayHandler.delayed((int)(1000*0.17),new Runnable() {
             @Override
             public void run() {
-                bash.play();
+                soundHandler.bash.play();
             }
         });
     }

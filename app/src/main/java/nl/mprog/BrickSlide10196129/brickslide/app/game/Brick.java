@@ -61,8 +61,7 @@ public class Brick extends Sprite {
         float duration = (float)Math.max(0.05,distance/800);
         MoveModifier entityModifier = new MoveModifier(duration,startx,endx,starty,endy);
         registerEntityModifier(entityModifier);
-        if(TouchHandler.bump != null)
-            TouchHandler.bump.play();
+        handler.playBump();
     }
 
 }

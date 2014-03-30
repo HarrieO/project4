@@ -15,8 +15,6 @@ public class TouchHandler {
     public static int FIELD_X = 60 ;
     public static int FIELD_Y = 305 ;
 
-    public static Sound bump ;
-
     private float startX, startY;
     private boolean moving ;
     private Brick brick;
@@ -24,7 +22,6 @@ public class TouchHandler {
 
     TouchHandler(MainActivity activity){
         this.activity = activity ;
-        this.bump = null;
     }
 
     public synchronized boolean startMove(Brick brick, TouchEvent pSceneTouchEvent){
@@ -39,8 +36,8 @@ public class TouchHandler {
         return true ;
     }
 
-    public void setBump(Sound bump){
-        this.bump = bump ;
+    public void playBump(){
+        activity.getSoundHandler().bump.play();
     }
 
     public boolean hasMove(Brick brick){

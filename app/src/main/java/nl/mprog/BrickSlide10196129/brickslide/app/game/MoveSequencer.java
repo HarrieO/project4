@@ -82,9 +82,8 @@ public class MoveSequencer {
         {
             super.onModifierFinished(pItem);
             nextMove();
-            if(dropSound && TouchHandler.bump != null) {
-                TouchHandler.bump.setVolume(50);
-                TouchHandler.bump.play();
+            if(dropSound && activity.getSoundHandler().bump != null) {
+                activity.getSoundHandler().bump.play();
             }
         }
     }

@@ -174,4 +174,27 @@ public class Puzzle {
 		return str;
 	}
 
+    public int getStars(boolean skipped){
+        if(skipped)
+            return 0 ;
+        else return getStars(moves);
+    }
+    public int getStars(int moves){
+        if(moves == -1)
+            return 0 ;
+        int bar = minimum ;
+        if(moves == bar)
+            return 5 ;
+        bar = (int) Math.max(bar + 4, minimum*1.25);
+        if(moves <= bar)
+            return 4;
+        bar = (int) Math.max(bar + 8, minimum*1.50);
+        if(moves <= bar)
+            return 3;
+        bar = (int) Math.max(bar + 16, minimum*2.0);
+        if(moves <= bar)
+            return 2;
+        return  1;
+    }
+
 }
