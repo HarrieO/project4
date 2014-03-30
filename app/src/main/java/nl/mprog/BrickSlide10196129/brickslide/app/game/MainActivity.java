@@ -1,6 +1,7 @@
 package nl.mprog.BrickSlide10196129.brickslide.app.game;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Typeface;
 import android.os.Bundle;
@@ -44,7 +45,6 @@ import RushHourSolver.Puzzle;
 import nl.mprog.BrickSlide10196129.brickslide.app.R;
 import nl.mprog.BrickSlide10196129.brickslide.app.database.HighscoreDatabase;
 import nl.mprog.BrickSlide10196129.brickslide.app.database.MovesDatabase;
-import nl.mprog.BrickSlide10196129.brickslide.app.database.PuzzleDatabase;
 import nl.mprog.BrickSlide10196129.brickslide.app.database.PuzzleDatabase.PuzzleCursor;
 
 import nl.mprog.BrickSlide10196129.brickslide.app.game.ResourceLoader.Values;
@@ -85,28 +85,33 @@ public class MainActivity extends SimpleBaseGameActivity {
     protected void onCreate(Bundle pSavedInstanceState){
         super.onCreate(pSavedInstanceState);
         carSprites   = new ArrayList<Brick>();
-        puzzleCursor = new PuzzleDatabase(this).getCursor();
-        highscoredb  = new HighscoreDatabase(this);
+        puzzleCursor = ((BrickSlideApplication)getApplication()).getPuzzleDatabase().getCursor();
+        highscoredb  = ((BrickSlideApplication)getApplication()).getHighscoreDatabase();
 
         skipped = false ;
 
-        SharedPreferences pref = getPreferences(MODE_PRIVATE);
-        int id = pref.getInt(getString(R.string.level_id_pref_key),-1);
-        int moves = pref.getInt(getString(R.string.no_moves_pref_key),0);
-        if(id == -1)
-            puzzle = puzzleCursor.get();
-        else if(moves == 0)
+        Intent intent = getIntent() ;
+        if(intent.hasExtra("Level")) {
+            int id = intent.getIntExtra("Level", 0);
             puzzle = puzzleCursor.get(id);
-        else {
-            puzzle = puzzleCursor.get(id);
-            String state = pref.getString(getString(R.string.state_pref_key), "");
-            if(state != "")
-                puzzle.setState(state,moves);
-            MovesDatabase db = new MovesDatabase(this);
-            if(db.movesSaved())
-                puzzle.setMoves(db.get());
+        } else {
+            SharedPreferences pref = getPreferences(MODE_PRIVATE);
+            int id = pref.getInt(getString(R.string.level_id_pref_key), -1);
+            int moves = pref.getInt(getString(R.string.no_moves_pref_key), 0);
+            if (id == -1)
+                puzzle = puzzleCursor.get();
+            else if (moves == 0)
+                puzzle = puzzleCursor.get(id);
+            else {
+                puzzle = puzzleCursor.get(id);
+                String state = pref.getString(getString(R.string.state_pref_key), "");
+                if (state != "")
+                    puzzle.setState(state, moves);
+                MovesDatabase db = ((BrickSlideApplication)getApplication()).getMovesDatabase();
+                if (db.movesSaved())
+                    puzzle.setMoves(db.get());
+            }
         }
-
         stars   = new Sprite[5];
         nostars = new Sprite[5];
 
@@ -123,7 +128,7 @@ public class MainActivity extends SimpleBaseGameActivity {
         pref.putString(getString(R.string.state_pref_key), puzzle.getBoard().getState());
         pref.commit();
 
-        MovesDatabase db = new MovesDatabase(this);
+        MovesDatabase db = ((BrickSlideApplication)getApplication()).getMovesDatabase();
         db.put(puzzle.movesString());
 
         if(solveThread != null)
@@ -252,8 +257,7 @@ public class MainActivity extends SimpleBaseGameActivity {
                 initBricks(scene);
                 scene.detachChild(upSlide);
                 scene.detachChild(downSlide);
-                scene.attachChild(upSlide);
-                scene.attachChild(downSlide);
+
 
                 puzzleTitle.setText(puzzle.getName());
 
@@ -277,6 +281,8 @@ public class MainActivity extends SimpleBaseGameActivity {
                     if(i < highscore)
                         scene.attachChild(stars[i]);
                 }
+                scene.attachChild(upSlide);
+                scene.attachChild(downSlide);
             }
         });
 
@@ -443,6 +449,27 @@ public class MainActivity extends SimpleBaseGameActivity {
         solveThread = null ;
     }
 
+    private void enableStar(final int index){
+        this.runOnUpdateThread(new Runnable() {
+            @Override
+            public void run() {
+                getEngine().getScene().attachChild(stars[index]);
+            }
+        });
+    }
+
+    private void attachSlides(){
+        this.runOnUpdateThread(new Runnable() {
+            @Override
+            public void run() {
+                upSlide.detachSelf();
+                downSlide.detachSelf();
+                getEngine().getScene().attachChild(upSlide);
+                getEngine().getScene().attachChild(downSlide);
+            }
+        });
+    }
+
     private void startTransition(){
         for(int i = 0 ; i < 5 ; i++)
             stars[i].detachSelf();
@@ -452,7 +479,7 @@ public class MainActivity extends SimpleBaseGameActivity {
                 DelayHandler.delayed(250 * i, new Runnable() {
                     @Override
                     public void run() {
-                        getEngine().getScene().attachChild(stars[index]);
+                        enableStar(index);
                         soundHandler.starwon.setVolume(10);
                         soundHandler.starwon.play();
                     }
@@ -479,10 +506,7 @@ public class MainActivity extends SimpleBaseGameActivity {
 
     private void slideTransition(){
         disableBrickTouching();
-        upSlide.detachSelf();
-        downSlide.detachSelf();
-        getEngine().getScene().attachChild(upSlide);
-        getEngine().getScene().attachChild(downSlide);
+        attachSlides();
         upSlide.registerEntityModifier(new MoveModifier(0.3f,0,0,-650,0) {
             @Override
             protected void onModifierFinished(final IEntity pItem)

@@ -20,6 +20,10 @@ public class PuzzleDatabase {
         mDbHelper = new PuzzleDatabaseHelper(context);
     }
 
+    public void close(){
+        mDbHelper.close();
+    }
+
     /**
      * Returns a cursor used for Evil algorithm,words found are like state but unlike given arraylist
      */
@@ -32,9 +36,9 @@ public class PuzzleDatabase {
                 FeedEntry.COLUMN_NAME_MINIMUM,
                 FeedEntry.COLUMN_NAME_PUZZLE
         };
+        PuzzleCursor pc =  new PuzzleCursor(db.query(FeedEntry.TABLE_NAME, projection, null, null, null, null, null));
 
-        return new PuzzleCursor(db.query(FeedEntry.TABLE_NAME, projection, null, null, null, null, null));
-
+        return  pc ;
     }
 
     public static class PuzzleCursor {

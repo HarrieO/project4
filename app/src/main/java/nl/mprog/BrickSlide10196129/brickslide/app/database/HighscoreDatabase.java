@@ -30,6 +30,10 @@ public class HighscoreDatabase {
         return mDbHelper;
     }
 
+    public void close(){
+        mDbHelper.close();
+    }
+
     public void put(int puzzle_id, int moves) {
         SQLiteDatabase db = load().getWritableDatabase();
 
@@ -40,7 +44,6 @@ public class HighscoreDatabase {
 
             long newRowId = db.insert(FeedEntry.TABLE_NAME, null, values);
         }
-
     }
 
     /**
@@ -64,7 +67,6 @@ public class HighscoreDatabase {
 
         Cursor c = db.query(FeedEntry.TABLE_NAME, projection, whereClause, whereArgs, null, null, null);
 
-
         db = load().getWritableDatabase();
 
         String[] id = new String[1];
@@ -78,7 +80,6 @@ public class HighscoreDatabase {
             } else
                 best = false ;
         }
-
         return best ;
     }
 
@@ -96,6 +97,7 @@ public class HighscoreDatabase {
         String[] whereArgs = new String[]{ String.valueOf(puzzle_id) };
 
         Cursor c = db.query(FeedEntry.TABLE_NAME, projection, whereClause, whereArgs, null, null, null);
+
         return c.getCount() > 0 ;
     }
 
@@ -113,6 +115,7 @@ public class HighscoreDatabase {
         String[] whereArgs = new String[]{ String.valueOf(puzzle_id) };
 
         Cursor c = db.query(FeedEntry.TABLE_NAME, projection, whereClause, whereArgs, null, null, null);
+
         c.moveToFirst();
         return c.getInt(c.getColumnIndex(FeedEntry.COLUMN_NAME_MOVES));
     }

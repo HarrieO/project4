@@ -12,8 +12,8 @@ import android.provider.BaseColumns;
 public class HighscoreDatabaseHelper extends SQLiteOpenHelper {
 
     // If you change the database schema, you must increment the database version.
-    public static final int DATABASE_VERSION = 4;
-    public static final String DATABASE_NAME = "BrickSlide.db";
+    public static final int DATABASE_VERSION = 5;
+    public static final String DATABASE_NAME = "BrickSlideHighScores.db";
 
     public HighscoreDatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
