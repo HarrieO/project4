@@ -6,6 +6,7 @@ import org.andengine.opengl.texture.region.ITextureRegion;
 import org.andengine.opengl.vbo.VertexBufferObjectManager;
 
 /**
+ * Class for onscreen buttons, all wrapper functions.
  * Created by hroosterhuis on 3/22/14.
  */
 public abstract class ButtonSprite extends Sprite {
@@ -22,6 +23,9 @@ public abstract class ButtonSprite extends Sprite {
         return activity ;
     }
 
+    /**
+     * Wrapper function to ease programming.
+     */
     public ButtonSprite(MainActivity activity, float pX, float pY, ITextureRegion pTextureRegion, VertexBufferObjectManager pVertexBufferObjectManager) {
         super(pX, pY, pTextureRegion, pVertexBufferObjectManager);
         this.activity = activity ;

@@ -1,4 +1,4 @@
-package nl.mprog.BrickSlide10196129.brickslide.app.game;
+package nl.mprog.BrickSlide10196129.brickslide.app;
 
 import android.app.Application;
 
@@ -6,6 +6,9 @@ import nl.mprog.BrickSlide10196129.brickslide.app.database.HighscoreDatabase;
 import nl.mprog.BrickSlide10196129.brickslide.app.database.MovesDatabase;
 import nl.mprog.BrickSlide10196129.brickslide.app.database.PuzzleDatabase;
 
+/**
+ * Application class for shared databases.
+ */
 public class BrickSlideApplication extends Application
 {
 

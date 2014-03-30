@@ -15,10 +15,14 @@ import java.io.InputStream;
 import java.util.HashMap;
 
 /**
+ *  Class to load all the resources
  * Created by hroosterhuis on 3/20/14.
  */
 public class ResourceLoader {
 
+    /**
+     * Static class for all variables, made to avoid typos and ease programming.
+     */
     public static enum Values {
         RED("Red"), BLUE("Blue"), GREEN("Green"), PURPLE("Purple"),
         HORIZONTAL("H"), VERTICAL("V"), BRICK("Brick"), BACKGROUND("BrickslideBackground.jpg"),
@@ -34,6 +38,9 @@ public class ResourceLoader {
         }
     }
 
+    /**
+     * Holds all the loaded textures, to avoid double loading.
+     */
     private final HashMap<String, TextureRegion> textureLibrary = new HashMap<String, TextureRegion>();
 
     private TextureManager textureManager ;
@@ -42,14 +49,6 @@ public class ResourceLoader {
     public ResourceLoader(TextureManager textureManager, AssetManager assets){
         this.textureManager = textureManager ;
         this.assets         = assets ;
-    }
-
-    public void unload(String key){
-        textureLibrary.remove(key);
-    }
-
-    public boolean isLoaded(String key){
-        return textureLibrary.containsKey(key);
     }
 
     public void loadAll() throws IOException {

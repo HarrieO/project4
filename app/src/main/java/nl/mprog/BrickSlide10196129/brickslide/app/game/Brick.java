@@ -10,6 +10,8 @@ import RushHourSolver.Puzzle;
 import RushHourSolver.Car;
 
 /**
+ * A single brick sprite for andengine.
+ * Is based around a RushHour car
  * Created by hroosterhuis on 3/20/14.
  */
 public class Brick extends Sprite {

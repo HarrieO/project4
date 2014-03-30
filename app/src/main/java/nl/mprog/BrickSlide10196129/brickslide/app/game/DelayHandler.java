@@ -6,6 +6,7 @@ import android.os.Process;
 import RushHourSolver.Puzzle;
 
 /**
+ * Handler for actions that have to be delayed.
  * Created by hroosterhuis on 3/22/14.
  */
 public class DelayHandler {
@@ -24,18 +25,5 @@ public class DelayHandler {
                 runnable.run();
             }
         }).start();
-    }
-
-    public static void priorityThread(final Runnable runnable){
-        Thread t = new Thread(new Runnable() {
-            @Override
-            public void run() {
-
-                runnable.run();
-            }
-        });
-        t.setPriority(Thread.MAX_PRIORITY);
-        t.start();
-        
     }
 }

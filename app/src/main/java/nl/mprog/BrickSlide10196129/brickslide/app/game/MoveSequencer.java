@@ -10,6 +10,7 @@ import java.util.Queue;
 import RushHourSolver.Move;
 
 /**
+ * Class for the animation of several on screen moves.
  * Created by hroosterhuis on 3/22/14.
  */
 public class MoveSequencer {
@@ -31,10 +32,16 @@ public class MoveSequencer {
        this(activity,bricks,new LinkedList<Move>());
     }
 
+    /**
+     * Adds a move at the end of the sequence
+     */
     public void addMove(Move move){
         moves.offer(move);
     }
 
+    /**
+     * Disables sound when brick is dropped. (this is done for the final move)
+     */
     public void setDropSound(Boolean dropSound){
         this.dropSound = dropSound;
     }
@@ -67,16 +74,23 @@ public class MoveSequencer {
             SingleMove next = new SingleMove(duration,startx,endx,starty,endy);
             brick.registerEntityModifier(next);
 
+        // upon finishing control is given back to the player
         } else if(!activity.finishPuzzle())
             activity.enableBrickTouching();
     }
 
+    /**
+     * Class for a single move
+     */
     private class SingleMove extends MoveModifier{
 
         public SingleMove(float pDuration, float pFromX, float pToX, float pFromY, float pToY) {
             super(pDuration, pFromX, pToX, pFromY, pToY);
         }
 
+        /**
+         * Upon finishing the next move is initiated.
+         */
         @Override
         protected void onModifierFinished(IEntity pItem)
         {

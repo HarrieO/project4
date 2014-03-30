@@ -5,19 +5,13 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Typeface;
 import android.os.Bundle;
-import android.util.Log;
 import android.widget.Toast;
 
-import org.andengine.audio.sound.Sound;
-import org.andengine.audio.sound.SoundFactory;
 import org.andengine.entity.IEntity;
 import org.andengine.entity.modifier.MoveModifier;
-import org.andengine.entity.modifier.RotationModifier;
-import org.andengine.entity.modifier.ScaleModifier;
 import org.andengine.entity.text.Text;
 import org.andengine.entity.util.FPSLogger;
 import org.andengine.opengl.font.Font;
-import org.andengine.opengl.texture.TextureOptions;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlas;
 import org.andengine.ui.activity.SimpleBaseGameActivity;
 import org.andengine.engine.options.EngineOptions;
@@ -27,7 +21,6 @@ import org.andengine.engine.camera.Camera;
 import org.andengine.engine.options.ScreenOrientation;
 import org.andengine.engine.options.resolutionpolicy.RatioResolutionPolicy;
 
-import org.andengine.util.HorizontalAlign;
 import org.andengine.util.color.Color;
 import org.andengine.util.debug.Debug;
 
@@ -42,6 +35,7 @@ import RushHourSolver.Car;
 import RushHourSolver.Move;
 import RushHourSolver.MoveStack;
 import RushHourSolver.Puzzle;
+import nl.mprog.BrickSlide10196129.brickslide.app.BrickSlideApplication;
 import nl.mprog.BrickSlide10196129.brickslide.app.R;
 import nl.mprog.BrickSlide10196129.brickslide.app.database.HighscoreDatabase;
 import nl.mprog.BrickSlide10196129.brickslide.app.database.MovesDatabase;
@@ -49,12 +43,14 @@ import nl.mprog.BrickSlide10196129.brickslide.app.database.PuzzleDatabase.Puzzle
 
 import nl.mprog.BrickSlide10196129.brickslide.app.game.ResourceLoader.Values;
 
-
+/**
+ * Main game activity
+ */
 public class MainActivity extends SimpleBaseGameActivity {
 
     private static int CAMERA_WIDTH = 720;
     private static int CAMERA_HEIGHT = 1280;
-    private static long SKIP_TIME   = 1000*30;
+    private static long SKIP_TIME   = 1000*60*5;
 
     private HighscoreDatabase highscoredb ;
     private PuzzleCursor puzzleCursor ;
@@ -74,7 +70,7 @@ public class MainActivity extends SimpleBaseGameActivity {
     private Font mFont ;
     private Text puzzleTitle, moveCounter ;
 
-    private long puzzleStarted ;
+    private long puzzleStarted, lastToast ;
 
     private boolean skipped ;
 
@@ -93,13 +89,16 @@ public class MainActivity extends SimpleBaseGameActivity {
 
         skipped = false ;
 
+        lastToast = 0;
 
-
+        //Load puzzle
         Intent intent = getIntent() ;
+        //intent from level selection
         if(intent.hasExtra("Level")) {
             int id = intent.getIntExtra("Level", 0);
             puzzle = puzzleCursor.get(id);
             puzzleStarted = System.currentTimeMillis();
+        //intent from main menu
         } else {
             SharedPreferences pref = getPreferences(MODE_PRIVATE);
             puzzleStarted = pref.getLong(getString(R.string.time_started), System.currentTimeMillis());
@@ -123,10 +122,13 @@ public class MainActivity extends SimpleBaseGameActivity {
         nostars = new Sprite[5];
 
         solveMessage = Toast.makeText(this,"Calculating solution...", Toast.LENGTH_LONG);
-        waitMessage  = Toast.makeText(this,"Try longer to skip this puzzle", Toast.LENGTH_SHORT);
+        waitMessage  = Toast.makeText(this,"", Toast.LENGTH_LONG);
     }
 
     @Override
+    /**
+     * Saves game state and stops solving thread
+     */
     protected void onPause(){
         super.onPause();
         SharedPreferences.Editor pref = getPreferences(MODE_PRIVATE).edit();
@@ -190,6 +192,7 @@ public class MainActivity extends SimpleBaseGameActivity {
         scene.attachChild(noskip);
         scene.registerTouchArea(noskip);
 
+        // make sure the skip will be available later
         setNoskipTimer();
 
         initBricks(scene);
@@ -235,6 +238,10 @@ public class MainActivity extends SimpleBaseGameActivity {
         return scene;
     }
 
+    /**
+     * places bricks of puzzle on scene
+     * @param scene
+     */
     public void initBricks(final Scene scene) {
         Board board = puzzle.getBoard();
 
@@ -251,6 +258,11 @@ public class MainActivity extends SimpleBaseGameActivity {
 
 
     }
+
+    /**
+     * Changes on screen puzzle to private puzzle, used to change levels
+     * @param scene
+     */
     public void setPuzzle(final Scene scene){
         this.runOnUpdateThread(new Runnable()
         {
@@ -304,6 +316,9 @@ public class MainActivity extends SimpleBaseGameActivity {
 
     }
 
+    /**
+     * Enable play when game finished creating
+     */
     public void onGameCreated(){
         super.onGameCreated();
         enableBrickTouching();
@@ -328,6 +343,9 @@ public class MainActivity extends SimpleBaseGameActivity {
         return options ;
     }
 
+    /**
+     * Disables touch of buttons and bricks
+     */
     public void disableBrickTouching(){
         Scene scene = getEngine().getScene();
         for(Brick brick : carSprites){
@@ -337,7 +355,9 @@ public class MainActivity extends SimpleBaseGameActivity {
         scene.unregisterTouchArea(restart);
         scene.unregisterTouchArea(skip);
     }
-
+    /**
+     * Enables touch of buttons and bricks
+     */
     public void enableBrickTouching(){
 
         Scene scene = getEngine().getScene();
@@ -350,23 +370,13 @@ public class MainActivity extends SimpleBaseGameActivity {
 
     }
 
-
-    /**
-     * Does not disable touching.
-     * @param move
-     * @return
-     */
-    public boolean move(Move move){
-        if(puzzle.move(move)){
-            return true ;
-        }
-        return false ;
-    }
-
     public Puzzle getPuzzle(){
         return puzzle ;
     }
 
+    /**
+     * Performs final move if possible, and initiates transition to next puzzle if solved.
+     */
     public boolean finishPuzzle(){
         if(!puzzle.solved()) {
             Move winningMove = puzzle.winningMove();
@@ -406,6 +416,9 @@ public class MainActivity extends SimpleBaseGameActivity {
         undo(puzzle.moveCount());
     }
 
+    /**
+     * Undos moves of the puzzle, animation shown on screen.
+     */
     public void undo(int steps){
         MoveSequencer seq = new MoveSequencer(this,carSprites);
         Move undone = puzzle.undo() ;
@@ -418,6 +431,9 @@ public class MainActivity extends SimpleBaseGameActivity {
         seq.start();
     }
 
+    /**
+     * Safe method to update on screen counter
+     */
     public void updateMoveCounter(){
         this.runOnUpdateThread(new Runnable()
         {
@@ -430,6 +446,9 @@ public class MainActivity extends SimpleBaseGameActivity {
         });
     }
 
+    /**
+     * sets timer for enabling skip button
+     */
     public void setNoskipTimer(){
         DelayHandler.delayed((int)(SKIP_TIME - (System.currentTimeMillis() - puzzleStarted))+100, new Runnable() {
             @Override
@@ -439,35 +458,42 @@ public class MainActivity extends SimpleBaseGameActivity {
         });
     }
 
+    /**
+     * method for press of skip button, starts a safe thread to calculate solution.
+     */
     public void skip(){
         if(System.currentTimeMillis() - puzzleStarted > SKIP_TIME) {
             disableBrickTouching();
 
-            Thread t = new Thread(new Runnable() {
+            solveThread = new Thread(new Runnable() {
                 @Override
                 public void run() {
 
                     safeSkip();
                 }
             });
-            t.setPriority(Thread.MAX_PRIORITY);
-            solveThread = t;
-            t.start();
+            solveThread.setPriority(Thread.MAX_PRIORITY);
+            solveThread.start();
         } else
             noskip();
 
     }
 
+    /**
+     * method for press of noskip button
+     */
     public void noskip(){
         if(System.currentTimeMillis() - puzzleStarted > SKIP_TIME) {
             enableSkip();
-        } else {
-            waitMessage.cancel();
+        // to avoid changing toast text when its active, a 10 second counter is placed
+        } else if(System.currentTimeMillis() - lastToast > 1000*10) {
             waitMessage.setText(getString(R.string.skip_message_start)+ " " + (SKIP_TIME - (System.currentTimeMillis() - puzzleStarted))/1000 + " " + getString(R.string.skip_message_end));
             waitMessage.show();
+            lastToast = System.currentTimeMillis();
         }
     }
 
+     // Enable skip button
     public void enableSkip(){
         this.runOnUpdateThread(new Runnable() {
             @Override
@@ -477,11 +503,11 @@ public class MainActivity extends SimpleBaseGameActivity {
                 scene.unregisterTouchArea(noskip);
                 scene.attachChild(skip);
                 scene.registerTouchArea(skip);
-
             }
         });
     }
 
+    // disable skip button
     public void disableSkip(){
         this.runOnUpdateThread(new Runnable() {
             @Override
@@ -489,6 +515,7 @@ public class MainActivity extends SimpleBaseGameActivity {
                 Scene scene = getEngine().getScene();
                 skip.detachSelf();
                 scene.unregisterTouchArea(skip);
+                noskip.detachSelf();
                 scene.attachChild(noskip);
                 scene.registerTouchArea(noskip);
 
@@ -496,6 +523,8 @@ public class MainActivity extends SimpleBaseGameActivity {
         });
     }
 
+    // safe skip is performed in a safethread of skip()
+    // method can be interrupted
     private void safeSkip(){
         solveMessage.show();
         MoveStack sol = puzzle.solution();
@@ -514,6 +543,7 @@ public class MainActivity extends SimpleBaseGameActivity {
         solveThread = null ;
     }
 
+    // safe method for displaying star
     private void enableStar(final int index){
         this.runOnUpdateThread(new Runnable() {
             @Override
@@ -523,6 +553,7 @@ public class MainActivity extends SimpleBaseGameActivity {
         });
     }
 
+    // safe method for displaying slides
     private void attachSlides(){
         this.runOnUpdateThread(new Runnable() {
             @Override
@@ -535,9 +566,13 @@ public class MainActivity extends SimpleBaseGameActivity {
         });
     }
 
+    /**
+     * Method starts the transition from one puzzle to the other.
+     */
     private void startTransition(){
         for(int i = 0 ; i < 5 ; i++)
             stars[i].detachSelf();
+        // initiate star sequence
         for(int i = 0 ; i < 5 ; i++){
             final int index = i ;
             if(index < puzzle.getStars(skipped)) {
@@ -561,6 +596,7 @@ public class MainActivity extends SimpleBaseGameActivity {
 
         }
         skipped = false ;
+        // initiate slide transition
         DelayHandler.delayed(1500,new Runnable() {
             @Override
             public void run() {
@@ -569,6 +605,9 @@ public class MainActivity extends SimpleBaseGameActivity {
         } );
     }
 
+    /**
+     * Plays animation of falling slides, to change levels
+     */
     private void slideTransition(){
         disableBrickTouching();
         attachSlides();
@@ -576,6 +615,7 @@ public class MainActivity extends SimpleBaseGameActivity {
             @Override
             protected void onModifierFinished(final IEntity pItem)
             {
+                // slides closed, drawing new puzzle behind them
                 super.onModifierFinished(pItem);
                 DelayHandler.delayed(100, new Runnable() {
                     @Override
@@ -614,7 +654,7 @@ public class MainActivity extends SimpleBaseGameActivity {
 
             }
         });
-        
+        // Starting the bash sound just before the slides collide
         DelayHandler.delayed((int)(1000*0.17),new Runnable() {
             @Override
             public void run() {

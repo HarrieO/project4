@@ -2,11 +2,7 @@ package nl.mprog.BrickSlide10196129.brickslide.app;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
@@ -14,9 +10,7 @@ import android.widget.TextView;
 
 import RushHourSolver.Puzzle;
 import nl.mprog.BrickSlide10196129.brickslide.app.database.HighscoreDatabase;
-import nl.mprog.BrickSlide10196129.brickslide.app.database.MovesDatabase;
 import nl.mprog.BrickSlide10196129.brickslide.app.database.PuzzleDatabase;
-import nl.mprog.BrickSlide10196129.brickslide.app.game.BrickSlideApplication;
 import nl.mprog.BrickSlide10196129.brickslide.app.game.MainActivity;
 
 
