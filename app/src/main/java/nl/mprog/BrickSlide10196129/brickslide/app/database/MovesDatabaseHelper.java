@@ -47,7 +47,6 @@ public class MovesDatabaseHelper extends SQLiteOpenHelper {
 
         public static final String SQL_DELETE_ENTRIES = "DROP TABLE IF EXISTS " + MovesReaderContract.FeedEntry.TABLE_NAME;
 
-        public static final String SQL_TRUNCATE_ENTRIES = "TRUNCATE TABLE " + MovesReaderContract.FeedEntry.TABLE_NAME;
 
     }
 }

@@ -54,6 +54,7 @@ public class MainActivity extends SimpleBaseGameActivity {
 
     private static int CAMERA_WIDTH = 720;
     private static int CAMERA_HEIGHT = 1280;
+    private static long SKIP_TIME   = 1000*30;
 
     private HighscoreDatabase highscoredb ;
     private PuzzleCursor puzzleCursor ;
@@ -64,14 +65,16 @@ public class MainActivity extends SimpleBaseGameActivity {
     private SoundHandler soundHandler ;
 
     private Puzzle puzzle ;
-    private Toast solveMessage ;
+    private Toast solveMessage, waitMessage ;
 
     private Sprite upSlide, downSlide ;
-    private ButtonSprite undo, restart, skip ;
+    private ButtonSprite undo, restart, skip, noskip ;
 
     private BitmapTextureAtlas mFontTexture;
     private Font mFont ;
     private Text puzzleTitle, moveCounter ;
+
+    private long puzzleStarted ;
 
     private boolean skipped ;
 
@@ -90,12 +93,16 @@ public class MainActivity extends SimpleBaseGameActivity {
 
         skipped = false ;
 
+
+
         Intent intent = getIntent() ;
         if(intent.hasExtra("Level")) {
             int id = intent.getIntExtra("Level", 0);
             puzzle = puzzleCursor.get(id);
+            puzzleStarted = System.currentTimeMillis();
         } else {
             SharedPreferences pref = getPreferences(MODE_PRIVATE);
+            puzzleStarted = pref.getLong(getString(R.string.time_started), System.currentTimeMillis());
             int id = pref.getInt(getString(R.string.level_id_pref_key), -1);
             int moves = pref.getInt(getString(R.string.no_moves_pref_key), 0);
             if (id == -1)
@@ -116,7 +123,7 @@ public class MainActivity extends SimpleBaseGameActivity {
         nostars = new Sprite[5];
 
         solveMessage = Toast.makeText(this,"Calculating solution...", Toast.LENGTH_LONG);
-
+        waitMessage  = Toast.makeText(this,"Try longer to skip this puzzle", Toast.LENGTH_SHORT);
     }
 
     @Override
@@ -126,6 +133,7 @@ public class MainActivity extends SimpleBaseGameActivity {
         pref.putInt(getString(R.string.level_id_pref_key), puzzle.getId());
         pref.putInt(getString(R.string.no_moves_pref_key), puzzle.moveCount());
         pref.putString(getString(R.string.state_pref_key), puzzle.getBoard().getState());
+        pref.putLong(getString(R.string.time_started), puzzleStarted);
         pref.commit();
 
         MovesDatabase db = ((BrickSlideApplication)getApplication()).getMovesDatabase();
@@ -178,8 +186,11 @@ public class MainActivity extends SimpleBaseGameActivity {
         scene.attachChild(restart);
         scene.registerTouchArea(restart);
         skip = ButtonSprite.skipSprite(this, resourceLoader, getVertexBufferObjectManager());
-        scene.attachChild(skip);
-        scene.registerTouchArea(skip);
+        noskip = ButtonSprite.noskipSprite(this, resourceLoader, getVertexBufferObjectManager());
+        scene.attachChild(noskip);
+        scene.registerTouchArea(noskip);
+
+        setNoskipTimer();
 
         initBricks(scene);
 
@@ -246,6 +257,9 @@ public class MainActivity extends SimpleBaseGameActivity {
             @Override
             public void run()
             {
+
+
+
                 while(!carSprites.isEmpty()){
                     Brick rem =  carSprites.remove(carSprites.size() - 1);
                     scene.detachChild(rem);
@@ -283,6 +297,8 @@ public class MainActivity extends SimpleBaseGameActivity {
                 }
                 scene.attachChild(upSlide);
                 scene.attachChild(downSlide);
+
+
             }
         });
 
@@ -414,21 +430,70 @@ public class MainActivity extends SimpleBaseGameActivity {
         });
     }
 
-
-    public void skip(){
-        disableBrickTouching();
-
-        Thread t = new Thread(new Runnable() {
+    public void setNoskipTimer(){
+        DelayHandler.delayed((int)(SKIP_TIME - (System.currentTimeMillis() - puzzleStarted))+100, new Runnable() {
             @Override
             public void run() {
-
-                safeSkip();
+                noskip();
             }
         });
-        t.setPriority(Thread.MAX_PRIORITY);
-        solveThread = t ;
-        t.start();
+    }
 
+    public void skip(){
+        if(System.currentTimeMillis() - puzzleStarted > SKIP_TIME) {
+            disableBrickTouching();
+
+            Thread t = new Thread(new Runnable() {
+                @Override
+                public void run() {
+
+                    safeSkip();
+                }
+            });
+            t.setPriority(Thread.MAX_PRIORITY);
+            solveThread = t;
+            t.start();
+        } else
+            noskip();
+
+    }
+
+    public void noskip(){
+        if(System.currentTimeMillis() - puzzleStarted > SKIP_TIME) {
+            enableSkip();
+        } else {
+            waitMessage.cancel();
+            waitMessage.setText(getString(R.string.skip_message_start)+ " " + (SKIP_TIME - (System.currentTimeMillis() - puzzleStarted))/1000 + " " + getString(R.string.skip_message_end));
+            waitMessage.show();
+        }
+    }
+
+    public void enableSkip(){
+        this.runOnUpdateThread(new Runnable() {
+            @Override
+            public void run() {
+                Scene scene = getEngine().getScene();
+                noskip.detachSelf();
+                scene.unregisterTouchArea(noskip);
+                scene.attachChild(skip);
+                scene.registerTouchArea(skip);
+
+            }
+        });
+    }
+
+    public void disableSkip(){
+        this.runOnUpdateThread(new Runnable() {
+            @Override
+            public void run() {
+                Scene scene = getEngine().getScene();
+                skip.detachSelf();
+                scene.unregisterTouchArea(skip);
+                scene.attachChild(noskip);
+                scene.registerTouchArea(noskip);
+
+            }
+        });
     }
 
     private void safeSkip(){
@@ -539,6 +604,9 @@ public class MainActivity extends SimpleBaseGameActivity {
                             protected void onModifierFinished(final IEntity pItem) {
                                 super.onModifierFinished(pItem);
                                 enableBrickTouching();
+                                puzzleStarted = System.currentTimeMillis();
+                                disableSkip();
+                                setNoskipTimer();
                             }
                         });
                     }

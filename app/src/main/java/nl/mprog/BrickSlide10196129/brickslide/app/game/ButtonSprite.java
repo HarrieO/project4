@@ -57,6 +57,16 @@ public abstract class ButtonSprite extends Sprite {
         return backgroundSprite ;
     }
 
+    public static ButtonSprite noskipSprite(MainActivity activity,ResourceLoader resourceLoader, VertexBufferObjectManager vbom){
+        ButtonSprite backgroundSprite = new ButtonSprite(activity, FIRSTX + SPACE * 2, FIRSTY, resourceLoader.getValue(ResourceLoader.Values.NOSKIP), vbom) {
+            @Override
+            public void touchAction() {
+                getActivity().noskip();
+            }
+        };
+        return backgroundSprite ;
+    }
+
     @Override
     public boolean onAreaTouched(TouchEvent pSceneTouchEvent, float pTouchAreaLocalX, float pTouchAreaLocalY) {
         if(!activity.getPuzzle().solved() && pSceneTouchEvent.getAction() == TouchEvent.ACTION_UP){

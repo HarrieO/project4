@@ -9,11 +9,15 @@ import android.database.sqlite.SQLiteDatabase;
 import nl.mprog.BrickSlide10196129.brickslide.app.database.MovesDatabaseHelper.MovesReaderContract.FeedEntry ;
 import nl.mprog.BrickSlide10196129.brickslide.app.database.MovesDatabaseHelper.MovesReaderContract;
 
+
+/**
+ * MoveDatabase is used to save the moves of the last game.
+ * Moves are saved as a parsable string.
+ */
 public class MovesDatabase {
 
     private MovesDatabaseHelper mDbHelper = null;
     private Context context;
-    private final static int limit = 30;
 
     public MovesDatabase(Context context) {
         this.context = context;

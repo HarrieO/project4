@@ -49,16 +49,15 @@ public class LevelSelectionActivity extends Activity {
 
         boolean last = false ;
 
-
-        if(enabled && db.hasScore(puzzle.getId())) {
+        if(enabled)
+            b.setText("-");
+        if(db.hasScore(puzzle.getId())) {
             int score = db.get(puzzle.getId());
             if (score != -1)
                 b.setText(String.valueOf(puzzle.getStars(db.get(puzzle.getId()))));
-        } else {
-            if(enabled)
-                b.setText("-");
+        } else
             last = true;
-        }
+
         b.setEnabled(enabled);
         if(enabled){
             final int id = puzzle.getId();

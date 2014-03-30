@@ -15,8 +15,6 @@ public class PuzzleDatabaseHelper extends SQLiteAssetHelper {
     }
 
     public static final class WordReaderContract {
-        // To prevent someone from accidentally instantiating the contract class,
-        // give it an empty constructor.
         public WordReaderContract() {}
 
         /* Inner class that defines the table contents */

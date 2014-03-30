@@ -3,13 +3,11 @@ package nl.mprog.BrickSlide10196129.brickslide.app.database;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
-import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 
 import nl.mprog.BrickSlide10196129.brickslide.app.database.HighscoreDatabaseHelper.HighscoreReaderContract.FeedEntry;
 
 /**
- * Highscore Database holds up to 30 highscores.
  * Created by hroosterhuis on 17/02/14.
  */
 public class HighscoreDatabase {
@@ -83,6 +81,10 @@ public class HighscoreDatabase {
         return best ;
     }
 
+    /**
+     * @param puzzle_id
+     * @return true if puzzle has been finished before
+     */
     public boolean hasScore(int puzzle_id){
         SQLiteDatabase db = load().getReadableDatabase();
 

@@ -9,7 +9,6 @@ import nl.mprog.BrickSlide10196129.brickslide.app.database.PuzzleDatabaseHelper.
 
 
 /**
- * Word database to access all words stored in the game.
  * Created by hroosterhuis on 18/02/14.
  */
 public class PuzzleDatabase {
@@ -24,9 +23,7 @@ public class PuzzleDatabase {
         mDbHelper.close();
     }
 
-    /**
-     * Returns a cursor used for Evil algorithm,words found are like state but unlike given arraylist
-     */
+
     public PuzzleCursor getCursor() {
         SQLiteDatabase db = mDbHelper.getReadableDatabase();
 
@@ -75,10 +72,6 @@ public class PuzzleDatabase {
             if(cursor.isAfterLast())
                 return null ;
             return get();
-        }
-
-        public int count() {
-            return cursor.getCount();
         }
 
         public boolean hasNext() {

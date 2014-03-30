@@ -23,7 +23,7 @@ public class ResourceLoader {
         RED("Red"), BLUE("Blue"), GREEN("Green"), PURPLE("Purple"),
         HORIZONTAL("H"), VERTICAL("V"), BRICK("Brick"), BACKGROUND("BrickslideBackground.jpg"),
         EXTENSION("jpg"), FOLDER("gfx/"), BRICKFOLDER("Bricks/"), UNDO("undo.jpg"), SKIP("skip.jpg"),
-        RESTART("restart.jpg"), SLIDE("slide.jpg"), STAR("star.gif"), NOSTAR("nostar.gif");
+        NOSKIP("skipcancelled.jpg"), RESTART("restart.jpg"), SLIDE("slide.jpg"), STAR("star.gif"), NOSTAR("nostar.gif");
 
         private String txt ;
         private Values(String txt){
@@ -57,6 +57,7 @@ public class ResourceLoader {
         loadValue(Values.UNDO);
         loadValue(Values.RESTART);
         loadValue(Values.SKIP);
+        loadValue(Values.NOSKIP);
         loadValue(Values.SLIDE);
         loadValue(Values.STAR);
         loadValue(Values.NOSTAR);

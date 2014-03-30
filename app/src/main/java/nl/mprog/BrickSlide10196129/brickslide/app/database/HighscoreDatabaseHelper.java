@@ -11,7 +11,7 @@ import android.provider.BaseColumns;
  */
 public class HighscoreDatabaseHelper extends SQLiteOpenHelper {
 
-    // If you change the database schema, you must increment the database version.
+
     public static final int DATABASE_VERSION = 5;
     public static final String DATABASE_NAME = "BrickSlideHighScores.db";
 
@@ -22,8 +22,6 @@ public class HighscoreDatabaseHelper extends SQLiteOpenHelper {
         db.execSQL(HighscoreReaderContract.SQL_CREATE_ENTRIES);
     }
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        // This database is only a cache for online data, so its upgrade policy is
-        // to simply to discard the data and start over
         db.execSQL(HighscoreReaderContract.SQL_DELETE_ENTRIES);
         onCreate(db);
     }
@@ -32,8 +30,6 @@ public class HighscoreDatabaseHelper extends SQLiteOpenHelper {
     }
 
     public static final class HighscoreReaderContract {
-        // To prevent someone from accidentally instantiating the contract class,
-        // give it an empty constructor.
         public HighscoreReaderContract() {}
 
         /* Inner class that defines the table contents */

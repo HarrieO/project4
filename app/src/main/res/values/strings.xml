@@ -10,5 +10,7 @@
     <string name="puzzle_started_pref_key">start_time</string>
     <string name="title_activity_menu">BrickSlide</string>
     <string name="title_activity_level_selection">Level Selection</string>
-
+    <string name="time_started">time_started</string>
+    <string name="skip_message_start">Puzzle can be skipped in </string>
+    <string name="skip_message_end"> seconds.</string>
 </resources>
